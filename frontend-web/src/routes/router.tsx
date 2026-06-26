@@ -1,0 +1,78 @@
+/* eslint-disable react-refresh/only-export-components */
+import { lazy, Suspense, type ReactNode } from 'react'
+import { Navigate, createBrowserRouter } from 'react-router-dom'
+import { PublicLayout } from '../layouts/PublicLayout'
+import { APP_ROUTES } from '../constants'
+import { RouteGuard } from './RouteGuard'
+
+const LandingPage = lazy(async () => ({
+  default: (await import('../pages/landing/LandingPage')).LandingPage,
+}))
+const LoginPage = lazy(async () => ({
+  default: (await import('../pages/auth/LoginPage')).LoginPage,
+}))
+const RegisterPage = lazy(async () => ({
+  default: (await import('../pages/auth/RegisterPage')).RegisterPage,
+}))
+const ForgotPasswordPage = lazy(async () => ({
+  default: (await import('../pages/auth/ForgotPasswordPage')).ForgotPasswordPage,
+}))
+const TestIntroPage = lazy(async () => ({
+  default: (await import('../pages/test/TestIntroPage')).TestIntroPage,
+}))
+const TestQuestionPage = lazy(async () => ({
+  default: (await import('../pages/test/TestQuestionPage')).TestQuestionPage,
+}))
+const TestReviewPage = lazy(async () => ({
+  default: (await import('../pages/test/TestReviewPage')).TestReviewPage,
+}))
+const ResultsPage = lazy(async () => ({
+  default: (await import('../pages/results/ResultsPage')).ResultsPage,
+}))
+const AdminDashboardPage = lazy(async () => ({
+  default: (await import('../pages/admin/AdminDashboardPage')).AdminDashboardPage,
+}))
+const ProfilePage = lazy(async () => ({
+  default: (await import('../pages/profile/ProfilePage')).ProfilePage,
+}))
+const NotFoundPage = lazy(async () => ({
+  default: (await import('../pages/NotFoundPage')).NotFoundPage,
+}))
+
+function withSuspense(component: ReactNode) {
+  return (
+    <Suspense fallback={<div className="loading-state">Cargando módulo...</div>}>
+      {component}
+    </Suspense>
+  )
+}
+
+export const router = createBrowserRouter([
+  {
+    path: APP_ROUTES.home,
+    element: <PublicLayout />,
+    children: [
+      { index: true, element: withSuspense(<LandingPage />) },
+      { path: APP_ROUTES.login, element: withSuspense(<LoginPage />) },
+      { path: APP_ROUTES.register, element: withSuspense(<RegisterPage />) },
+      { path: APP_ROUTES.recoverPassword, element: withSuspense(<ForgotPasswordPage />) },
+      { path: '/test', element: <Navigate to={APP_ROUTES.testIntro} replace /> },
+      { path: '/test/session', element: <Navigate to={APP_ROUTES.testSession} replace /> },
+      {
+        element: <RouteGuard allowedRoles={['student', 'admin']} />,
+        children: [
+          { path: APP_ROUTES.profile, element: withSuspense(<ProfilePage />) },
+          { path: APP_ROUTES.testIntro, element: withSuspense(<TestIntroPage />) },
+          { path: APP_ROUTES.testSession, element: withSuspense(<TestQuestionPage />) },
+          { path: APP_ROUTES.testReview, element: withSuspense(<TestReviewPage />) },
+          { path: APP_ROUTES.results, element: withSuspense(<ResultsPage />) },
+        ],
+      },
+      {
+        element: <RouteGuard allowedRoles={['admin']} />,
+        children: [{ path: APP_ROUTES.admin, element: withSuspense(<AdminDashboardPage />) }],
+      },
+      { path: '*', element: withSuspense(<NotFoundPage />) },
+    ],
+  },
+])
