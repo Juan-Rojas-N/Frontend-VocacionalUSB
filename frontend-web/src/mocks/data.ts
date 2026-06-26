@@ -1,0 +1,268 @@
+import { MOCK_CREDENTIALS, TEST_SCALE } from '../constants'
+import type {
+  AdminDashboard,
+  RegisteredUserRecord,
+  TestQuestion,
+  VocationalResult,
+} from '../types'
+
+export const storageKeys = {
+  users: 'usb-vocacional-users',
+}
+
+export const defaultMockUsers: RegisteredUserRecord[] = [
+  {
+    id: 'usr-student-1',
+    role: 'student',
+    fullName: 'Laura Gómez',
+    firstName: 'Laura',
+    lastName: 'Gómez',
+    document: '1029384756',
+    age: 19,
+    email: MOCK_CREDENTIALS[0].email,
+    phone: '3004567890',
+    department: 'Bogotá D.C.',
+    city: 'Bogotá',
+    gender: 'Femenino',
+    belongsToUniversity: false,
+    currentCareer: '',
+    currentSemester: '',
+    dataConsent: true,
+    createdAt: '2026-06-01T08:00:00.000Z',
+    passwordMock: MOCK_CREDENTIALS[0].password,
+  },
+  {
+    id: 'usr-admin-1',
+    role: 'admin',
+    fullName: 'Coordinación USB',
+    firstName: 'Coordinación',
+    lastName: 'USB',
+    document: '900123456',
+    age: 32,
+    email: MOCK_CREDENTIALS[1].email,
+    phone: '6011234567',
+    department: 'Bogotá D.C.',
+    city: 'Bogotá',
+    gender: 'Prefiero no decirlo',
+    belongsToUniversity: true,
+    currentCareer: 'Psicología',
+    currentSemester: '10',
+    dataConsent: true,
+    createdAt: '2026-05-11T10:15:00.000Z',
+    passwordMock: MOCK_CREDENTIALS[1].password,
+  },
+]
+
+export const mockQuestions: TestQuestion[] = [
+  {
+    id: 'q-1',
+    prompt: 'Me gusta resolver problemas lógicos y estructurados paso a paso',
+    dimension: 'Razonamiento analítico',
+    area: 'Ingeniería y tecnología',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-2',
+    prompt: 'Disfruto investigar causas, reunir evidencia y sacar conclusiones',
+    dimension: 'Investigación',
+    area: 'Ingeniería y tecnología',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-3',
+    prompt: 'Me siento cómodo explicando ideas complejas a otras personas',
+    dimension: 'Comunicación',
+    area: 'Arte y comunicación',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-4',
+    prompt: 'Me interesan los procesos creativos relacionados con diseño y contenidos',
+    dimension: 'Creatividad',
+    area: 'Arte y comunicación',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-5',
+    prompt: 'Prefiero actividades donde pueda liderar o coordinar a otras personas',
+    dimension: 'Liderazgo',
+    area: 'Negocios y gestión',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-6',
+    prompt: 'Me motiva entender cómo funcionan los sistemas y mejorarlos',
+    dimension: 'Pensamiento sistémico',
+    area: 'Ingeniería y tecnología',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-7',
+    prompt: 'Suelo observar con atención el comportamiento humano y sus motivaciones',
+    dimension: 'Empatía',
+    area: 'Ciencias sociales',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-8',
+    prompt: 'Me interesa acompañar procesos educativos, sociales o comunitarios',
+    dimension: 'Impacto social',
+    area: 'Ciencias sociales',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-9',
+    prompt: 'Me llaman la atención los temas de salud, bienestar y cuidado integral',
+    dimension: 'Bienestar',
+    area: 'Salud y bienestar',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-10',
+    prompt: 'Puedo combinar creatividad con orden para producir resultados concretos',
+    dimension: 'Gestión creativa',
+    area: 'Negocios y gestión',
+    options: TEST_SCALE,
+  },
+  {
+    id: 'q-11',
+    prompt: 'Disfruto aprender herramientas tecnológicas y usarlas para resolver necesidades',
+    dimension: 'Tecnología aplicada',
+    area: 'Ingeniería y tecnología',
+    options: TEST_SCALE,
+  },
+]
+
+export const mockResult: VocationalResult = {
+  id: 'result-001',
+  generatedAt: '2026-06-20T14:20:00.000Z',
+  primaryArea: 'Ingeniería y tecnología',
+  qualitativeSummary:
+    'Tu perfil muestra una afinidad alta con combinar lógica, análisis, resolución de problemas y uso aplicado de tecnología.',
+  careers: [
+    {
+      id: 'career-1',
+      name: 'Ingeniería de Sistemas',
+      affinity: 50,
+      area: 'Ingeniería y tecnología',
+      summary:
+        'Programa enfocado en el desarrollo de software, análisis de sistemas y tecnologías de la información.',
+      rationale: [
+        'Alta afinidad con razonamiento lógico y herramientas digitales.',
+        'Buen potencial para estructuras, análisis y resolución de problemas.',
+      ],
+    },
+    {
+      id: 'career-2',
+      name: 'Psicología',
+      affinity: 20,
+      area: 'Ciencias sociales',
+      summary:
+        'Carrera dedicada al estudio del comportamiento humano y procesos mentales.',
+      rationale: [
+        'Existe sensibilidad por comprender procesos humanos.',
+        'Se reconoce una base empática útil para trabajo con personas.',
+      ],
+    },
+    {
+      id: 'career-3',
+      name: 'Diseño Gráfico',
+      affinity: 30,
+      area: 'Arte y comunicación',
+      summary:
+        'Programa creativo orientado a la comunicación visual y producción de contenidos.',
+      rationale: [
+        'Se evidencia capacidad para comunicar y estructurar ideas.',
+        'La creatividad aparece como fortaleza complementaria.',
+      ],
+    },
+  ],
+  affinityByArea: [
+    { label: 'Ingeniería', value: 33 },
+    { label: 'Arte', value: 21 },
+    { label: 'Social', value: 21 },
+    { label: 'Ciencias', value: 21 },
+  ],
+  radarProfile: [
+    { subject: 'Análisis', score: 84, fullMark: 100 },
+    { subject: 'Creatividad', score: 63, fullMark: 100 },
+    { subject: 'Comunicación', score: 78, fullMark: 100 },
+    { subject: 'Liderazgo', score: 57, fullMark: 100 },
+    { subject: 'Investigación', score: 72, fullMark: 100 },
+  ],
+}
+
+export const mockAdminDashboard: AdminDashboard = {
+  metrics: [
+    {
+      id: 'metric-users',
+      label: 'TOTAL DE USUARIOS',
+      value: '1.284',
+      change: '',
+      hint: 'Usuarios internos y externos con acceso al sistema.',
+    },
+    {
+      id: 'metric-tests',
+      label: 'PRUEBAS COMPLETADAS',
+      value: '165',
+      change: '',
+      hint: 'Aplicaciones finalizadas en el periodo actual.',
+    },
+    {
+      id: 'metric-area',
+      label: 'ÁREA MÁS SELECCIONADA',
+      value: 'Ingenierías y Tecnología',
+      change: '',
+      hint: '',
+    },
+  ],
+  mostSelectedArea: 'Ingeniería y tecnología',
+  geographicDistribution: [
+    { region: 'Bogotá D.C.', users: 387, completedTests: 290 },
+    { region: 'Medellín', users: 156, completedTests: 110 },
+    { region: 'Cali', users: 144, completedTests: 104 },
+    { region: 'Barranquilla', users: 98, completedTests: 70 },
+    { region: 'Cartagena', users: 87, completedTests: 64 },
+    { region: 'Bucaramanga', users: 76, completedTests: 59 },
+    { region: 'Cúcuta', users: 55, completedTests: 41 },
+    { region: 'Pereira', users: 50, completedTests: 34 },
+    { region: 'Manizales', users: 42, completedTests: 29 },
+    { region: 'Armenia', users: 36, completedTests: 28 },
+  ],
+  affinityDistribution: [
+    { label: 'Internos', value: 62 },
+    { label: 'Externos', value: 38 },
+  ],
+  recentResults: [
+    {
+      id: 'adm-1',
+      studentName: 'Carlos Méndez',
+      document: '1090012211',
+      city: 'Bogotá',
+      primaryArea: 'Ingeniería y tecnología',
+      topCareer: 'Ingeniería de Sistemas',
+      affinity: 92,
+      completedAt: '2026-06-19T18:40:00.000Z',
+    },
+    {
+      id: 'adm-2',
+      studentName: 'Sofía Herrera',
+      document: '1029912210',
+      city: 'Cali',
+      primaryArea: 'Arte y comunicación',
+      topCareer: 'Comunicación Social',
+      affinity: 87,
+      completedAt: '2026-06-19T16:20:00.000Z',
+    },
+    {
+      id: 'adm-3',
+      studentName: 'Valentina Ruiz',
+      document: '1019911190',
+      city: 'Medellín',
+      primaryArea: 'Ciencias sociales',
+      topCareer: 'Psicología',
+      affinity: 89,
+      completedAt: '2026-06-19T11:05:00.000Z',
+    },
+  ],
+}
