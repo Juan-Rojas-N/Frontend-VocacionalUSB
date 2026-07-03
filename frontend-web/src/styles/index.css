@@ -134,7 +134,7 @@ button {
 .page-shell {
   width: 100%;
   max-width: none;
-  padding: 0 0 4rem;
+  
 }
 
 .footer {
@@ -1122,6 +1122,10 @@ button {
   justify-content: center;
 }
 
+.mockup-auth-page--login {
+  align-items: flex-start;
+}
+
 .mockup-auth-page--gradient {
   min-height: calc(100vh - 200px);
   background: linear-gradient(180deg, #ef7d00 0%, #e9851e 26%, #9f6842 63%, #272781 100%);
@@ -1147,10 +1151,9 @@ button {
 }
 
 .mockup-auth-card--login {
-  max-width: 520px;
-  padding: 38px 34px;
-  display: grid;
-  gap: 18px;
+  max-width: 550px;
+  padding: 0;
+  overflow: hidden;
 }
 
 .mockup-auth-card--register {
@@ -1352,6 +1355,94 @@ button {
   color: #8b8a84;
   font-size: 12px;
   letter-spacing: 0.08em;
+}
+
+.mockup-auth-card--login-gradient {
+  background: #fff;
+}
+
+.mockup-login-hero {
+  padding: 26px 28px 22px;
+  background: linear-gradient(180deg, #ef7d00 40%, #181E7B 95%);
+  color: #fff;
+}
+
+.mockup-login-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(42px, 5vw, 45px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.mockup-login-hero p {
+  width: min(420px, 100%);
+  margin: 15px 0 0;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.mockup-login-body {
+  padding: 18px 14px 14px;
+  display: grid;
+  gap: 16px;
+  background: #fff;
+}
+
+.mockup-auth-row--login {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mockup-checkline--login {
+  color: #121212;
+  font-size: 17px;
+}
+
+.mockup-checkline--login input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.mockup-auth-row--login a {
+  color: #ef7d00;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.mockup-input--compact-icon {
+  min-height: 58px;
+  padding-right: 14px;
+}
+
+.mockup-login-eye {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid #9c9c9c;
+  display: grid;
+  place-items: center;
+  color: #7c7c7c;
+  font-size: 12px;
+}
+
+.mockup-primary-button--login {
+  min-height: 64px;
+  font-size: 22px;
+  background: linear-gradient(180deg, #ef7d00 40%, #181E7B 95%);
+  box-shadow: 0 14px 26px rgba(239, 125, 0, 0.24);
+}
+
+.mockup-auth-register-link--login {
+  font-size: 16px;
+}
+
+.mockup-auth-legend--login {
+  color: #c5c2bb;
+  font-size: 11px;
 }
 
 .before-test-page,
@@ -2774,8 +2865,8 @@ button {
 .session-mockup-page {
   width: 100%;
   min-height: calc(100vh - 200px);
-  padding: 38px 28px 0;
-  background: linear-gradient(180deg, #ef7d00 0%, #ef7d00 62%, #24288b 100%);
+  padding: 38px 28px 38px;
+  background: linear-gradient(180deg, #ef7d00 0%, #ef7d00 62%, #181E7B 100%);
 }
 
 .session-mockup-shell {
@@ -2881,7 +2972,7 @@ button {
 .session-mockup-question__header span {
   color: #ff7d00;
   font-family: 'Poppins', sans-serif;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
 }
 
@@ -2896,7 +2987,7 @@ button {
   margin: 0 0 28px;
   color: #0f0f0f;
   font-family: 'Poppins', sans-serif;
-  font-size: clamp(42px, 4.2vw, 58px);
+  font-size: clamp(42px, 4.2vw, 45px);
   font-weight: 600;
   line-height: 1.12;
 }
@@ -2949,7 +3040,7 @@ button {
 .session-mockup-option__label {
   color: #7d7d7d;
   font-family: 'Poppins', sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 400;
   line-height: 1.2;
 }
@@ -2979,6 +3070,12 @@ button {
 }
 
 .session-mockup-button--primary {
+  border: 0;
+  background: #EF7D00;
+  color: #fff;
+}
+
+.session-mockup-button--primary:hover {
   border: 0;
   background: #ff8a00;
   color: #fff;
@@ -3081,8 +3178,8 @@ button {
 .results-sheet-page {
   width: 100%;
   min-height: calc(100vh - 200px);
-  padding: 6px 18px 0;
-  background: linear-gradient(180deg, #ef7d00 0%, #ef7d00 66%, #24288b 100%);
+  padding: 50px 18px 20px;
+  background: linear-gradient(180deg, #ef7d00 30%, #181E7B 100%);
 }
 
 .results-sheet {
@@ -3281,7 +3378,7 @@ button {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr) 250px;
   gap: 14px;
-  align-items: center;
+  align-items: normal;
   border-radius: 24px;
   background: #fcfcfc;
   border-left: 4px solid #ef7d00;
@@ -3290,8 +3387,8 @@ button {
 }
 
 .results-sheet__program-rank {
-  width: 52px;
-  height: 52px;
+  width: 65px;
+  height: 65px;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -3337,7 +3434,7 @@ button {
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #24288b 0%, #ef7d00 100%);
+  background: linear-gradient(135deg, #181E7B 0%, #ef7d00 100%);
   color: #fff;
   font-family: 'Poppins', sans-serif;
   font-size: 22px;
@@ -3412,8 +3509,10 @@ button {
 
 .results-sheet__floating {
   position: sticky;
-  bottom: 22px;
-  margin: 12px 0 18px auto;
+  right: 10px;
+  bottom: 30px;
+  margin: 20px 0 0px auto;
+  z-index: 1000;
   min-height: 74px;
   padding: 0 22px 0 10px;
   border: 0;
@@ -3449,7 +3548,7 @@ button {
 
 @media (max-width: 720px) {
   .results-sheet-page {
-    padding: 6px 10px 0;
+    padding: 20px 10px 20px;
   }
 
   .results-sheet {

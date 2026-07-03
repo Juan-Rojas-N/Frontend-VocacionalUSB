@@ -9,9 +9,7 @@ import { useAuthStore } from '../../stores/authStore'
 const loginSchema = z.object({
   email: z.email('Ingresa un correo válido.'),
   password: z.string().min(6, 'Ingresa tu contraseña mock.'),
-  isAdultConfirmed: z.boolean().refine((value) => value, {
-    message: 'Debes confirmar que eres mayor de edad.',
-  }),
+  rememberMe: z.boolean(),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -32,7 +30,7 @@ export function LoginPage() {
     defaultValues: {
       email: '',
       password: '',
-      isAdultConfirmed: false,
+      rememberMe: false,
     },
   })
 
@@ -52,66 +50,70 @@ export function LoginPage() {
   })
 
   return (
-    <div className="mockup-auth-page">
+    <div className="mockup-auth-page mockup-auth-page--login">
       <div className="mockup-auth-shell mockup-auth-shell--login">
-        <form className="mockup-auth-card mockup-auth-card--login" onSubmit={onSubmit}>
-          <div className="mockup-auth-card__header mockup-auth-card__header--login">
+        <form className="mockup-auth-card mockup-auth-card--login mockup-auth-card--login-gradient" onSubmit={onSubmit}>
+          <div className="mockup-login-hero">
             <h1>Iniciar sesión</h1>
             <p>Accede a la plataforma institucional de orientación vocacional</p>
           </div>
 
-          <div className="mockup-field-group">
-            <label htmlFor="login-email">Correo</label>
-            <input
-              id="login-email"
-              className="mockup-input"
-              type="email"
-              placeholder="usuario@example.com"
-              {...register('email')}
-            />
-            {errors.email ? <small className="form-field__error">{errors.email.message}</small> : null}
-          </div>
-
-          <div className="mockup-field-group">
-            <label htmlFor="login-password">Contraseña</label>
-            <div className="mockup-input mockup-input--with-icon">
+          <div className="mockup-login-body">
+            <div className="mockup-field-group">
+              <label htmlFor="login-email">Correo</label>
               <input
-                id="login-password"
-                type="password"
-                placeholder="Ingresa tu contraseña"
-                {...register('password')}
+                id="login-email"
+                className="mockup-input"
+                type="email"
+                placeholder="usuario@example.com"
+                {...register('email')}
               />
-              <span aria-hidden="true">◉</span>
+              {errors.email ? <small className="form-field__error">{errors.email.message}</small> : null}
             </div>
-            {errors.password ? <small className="form-field__error">{errors.password.message}</small> : null}
-          </div>
 
-          <div className="mockup-auth-row">
-            <label className="mockup-checkline">
-              <input type="checkbox" {...register('isAdultConfirmed')} />
-              <span>Confirmo mayoría de edad</span>
-            </label>
-            <Link to={APP_ROUTES.recoverPassword}>¿Olvidaste tu contraseña?</Link>
-          </div>
-          {errors.isAdultConfirmed ? <small className="form-field__error">{errors.isAdultConfirmed.message}</small> : null}
-          {errorMessage ? <div className="mockup-inline-error">{errorMessage}</div> : null}
+            <div className="mockup-field-group">
+              <label htmlFor="login-password">Contraseña</label>
+              <div className="mockup-input mockup-input--with-icon mockup-input--compact-icon">
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="Ingresa tu contraseña"
+                  {...register('password')}
+                />
+                <span aria-hidden="true" className="mockup-login-eye">◉</span>
+              </div>
+              {errors.password ? <small className="form-field__error">{errors.password.message}</small> : null}
+            </div>
 
-          <button type="submit" className="mockup-primary-button" disabled={isSubmitting}>
-            {isSubmitting ? 'Validando...' : 'Ingresar'}
-          </button>
+            <div className="mockup-auth-row mockup-auth-row--login">
+              <label className="mockup-checkline mockup-checkline--login">
+                <input type="checkbox" {...register('rememberMe')} />
+                <span>Recordarme</span>
+              </label>
+              <Link to={APP_ROUTES.recoverPassword}>¿Olvidaste tu contraseña?</Link>
+            </div>
 
-          <div className="mockup-auth-divider">
-            <span />
-            <p>acceso seguro</p>
-            <span />
+            {errorMessage ? <div className="mockup-inline-error">{errorMessage}</div> : null}
+
+            <button type="submit" className="mockup-primary-button mockup-primary-button--login" disabled={isSubmitting}>
+              {isSubmitting ? 'Validando...' : 'Ingresar'}
+            </button>
+
+            <div className="mockup-auth-divider">
+              <span />
+              <p>acceso seguro</p>
+              <span />
+            </div>
+
+            <div className="mockup-auth-register-link mockup-auth-register-link--login">
+              <span>¿No tienes cuenta?</span>
+              <Link to={APP_ROUTES.register}>Regístrate</Link>
+            </div>
+
+            <small className="mockup-auth-legend mockup-auth-legend--login">
+              UNIVERSIDAD DE SAN BUENAVENTURA VIGILADA MINIEDUCACIÓN
+            </small>
           </div>
-          <div className="mockup-auth-register-link">
-            <span>¿No tienes cuenta?</span>
-            <Link to={APP_ROUTES.register}>Regístrate</Link>
-          </div>
-          <small className="mockup-auth-legend">
-            UNIVERSIDAD DE SAN BUENAVENTURA VIGILADA MINIEDUCACIÓN
-          </small>
         </form>
       </div>
     </div>

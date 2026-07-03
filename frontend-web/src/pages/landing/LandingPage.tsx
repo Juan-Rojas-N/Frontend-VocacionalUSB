@@ -30,7 +30,7 @@ export function LandingPage() {
             <div className="landing-step-card__number">2</div>
             <h3>Prueba Vocacional</h3>
             <p>
-              Responde x preguntas diseñadas para evaluar tus intereses, habilidades y
+              Responde <span>180</span> preguntas diseñadas para evaluar tus intereses, habilidades y
               preferencias <span>(estimado de duración 40 minutos).</span>
             </p>
           </article>

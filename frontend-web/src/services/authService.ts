@@ -29,10 +29,6 @@ export const authService = {
     return simulateRequest<AuthSession>(
       '/api/auth/login',
       () => {
-        if (!payload.isAdultConfirmed) {
-          throw new Error('Debes confirmar que eres mayor de edad para ingresar.')
-        }
-
         const user = getUsers().find(
           (item) =>
             item.email.toLowerCase() === payload.email.toLowerCase() &&

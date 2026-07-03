@@ -24,7 +24,7 @@ export interface ApiEnvelope<T> {
 export interface LoginPayload {
   email: string
   password: string
-  isAdultConfirmed: boolean
+  rememberMe: boolean
 }
 
 export interface RecoverPasswordPayload {
