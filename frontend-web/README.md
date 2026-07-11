@@ -1,5 +1,5 @@
 # USB Vocacional Frontend
-
+"a"
 Frontend web de `USB Vocacional` construido con `Vite + React + TypeScript`.
 
 El proyecto usa `pnpm` como package manager oficial.
