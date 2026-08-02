@@ -26,7 +26,7 @@ export function ResultsPage() {
 
   async function handleDownload() {
     const response = await resultsService.downloadPdf()
-    setStatusMessage(`Informe listo: ${response.data.fileName}`)
+    setStatusMessage(`Descarga simulada del informe: ${response.data.fileName}`)
   }
 
   if (!data || !topCareer) {
@@ -34,79 +34,79 @@ export function ResultsPage() {
   }
 
   return (
-    <div className="results-sheet-page">
-      <section className="results-sheet">
-        <header className="results-sheet__header">
-          <h1>Resultados de tu Prueba Vocacional</h1>
+    <div className="resultado-vocacional">
+      <section className="resultado-vocacional__panel">
+        <header className="resultado-vocacional__encabezado">
+          <h1>Resultados de tu prueba vocacional</h1>
         </header>
 
-        <section className="results-sheet__hero">
-          <div className="results-sheet__hero-icon" aria-hidden="true">
-            <div className="results-sheet__hero-line results-sheet__hero-line--top" />
-            <div className="results-sheet__hero-line results-sheet__hero-line--mid" />
-            <div className="results-sheet__hero-line results-sheet__hero-line--low" />
-            <div className="results-sheet__hero-head" />
+        <section className="perfil-vocacional">
+          <div className="perfil-vocacional__icono" aria-hidden="true">
+            <div className="perfil-vocacional__linea perfil-vocacional__linea--superior" />
+            <div className="perfil-vocacional__linea perfil-vocacional__linea--media" />
+            <div className="perfil-vocacional__linea perfil-vocacional__linea--inferior" />
+            <div className="perfil-vocacional__figura" />
           </div>
-          <div className="results-sheet__hero-copy">
-            <h2>Ingenierías y Tecnología</h2>
+          <div className="perfil-vocacional__contenido">
+            <h2>IngenierÃ­as y TecnologÃ­a</h2>
             <p>{data.qualitativeSummary}</p>
           </div>
-          <div className="results-sheet__hero-user">
+          <div className="perfil-vocacional__usuario">
             <strong>{sessionUser?.fullName ?? 'Nombre Usuario'}</strong>
-            <span>Tu perfil presenta mayor de acuerdo con:</span>
+            <span>Tu perfil presenta mayor afinidad con:</span>
           </div>
         </section>
 
-        <section className="results-sheet__charts">
+        <section className="grafico-afinidad">
           <ResultCharts affinityByArea={data.affinityByArea} radarProfile={data.radarProfile} />
         </section>
 
-        <section className="results-sheet__programs">
-          <h3>Programas Recomendados</h3>
-          <div className="results-sheet__program-list">
+        <section className="carreras-recomendadas">
+          <h3>Carreras recomendadas</h3>
+          <div className="carreras-recomendadas__lista">
             {data.careers.map((career, index) => (
-              <article key={career.id} className="results-sheet__program-card">
-                <div className="results-sheet__program-rank">{index + 1}</div>
-                <div className="results-sheet__program-copy">
+              <article key={career.id} className="carreras-recomendadas__tarjeta">
+                <div className="carreras-recomendadas__ranking">{index + 1}</div>
+                <div className="carreras-recomendadas__contenido">
                   <strong>{career.name}</strong>
                   <span>{formatPercentage(career.affinity)} de compatibilidad</span>
                   <p>{career.summary}</p>
                 </div>
-                <div className="results-sheet__program-cta">
-                  <div className="results-sheet__avatar" aria-hidden="true">
+                <div className="carreras-recomendadas__acciones">
+                  <div className="resultado-vocacional__avatar" aria-hidden="true">
                     USB
                   </div>
-                  <button type="button">Conocer más</button>
+                  <button type="button">Conocer mÃ¡s</button>
                 </div>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="results-sheet__summary">
+        <section className="resumen-resultado">
           <h3>Resumen de tu perfil</h3>
           <p>
-            Tus resultados indican una fuerte inclinación hacia el área de{' '}
+            Tus resultados indican una fuerte inclinaciÃ³n hacia el Ã¡rea de{' '}
             <span>{data.primaryArea}</span> con un <span>{topCareer.affinity}%</span> de afinidad.
-            Esto sugiere que posees habilidades y preferencias alineadas con carreras en esta área.
+            Esto sugiere que posees habilidades y preferencias alineadas con carreras en esta Ã¡rea.
           </p>
-          <p className="results-sheet__meta">
+          <p className="resumen-resultado__meta">
             Informe generado el {formatDate(data.generatedAt)} con recomendaciones iniciales.
           </p>
-          {statusMessage ? <p className="results-sheet__status">{statusMessage}</p> : null}
+          {statusMessage ? <p className="resumen-resultado__estado">{statusMessage}</p> : null}
           <button
             type="button"
-            className="results-sheet__download"
+            className="acciones-resultado__descarga"
             onClick={handleDownload}
           >
             <span>Descargar PDF</span>
-            <span aria-hidden="true">↓</span>
+            <span aria-hidden="true">â†“</span>
           </button>
         </section>
       </section>
 
-      <button type="button" className="results-sheet__floating">
-        <span className="results-sheet__avatar results-sheet__avatar--small" aria-hidden="true">
+      <button type="button" className="acciones-resultado__flotante">
+        <span className="resultado-vocacional__avatar resultado-vocacional__avatar--compacto" aria-hidden="true">
           USB
         </span>
         <span>Financiamiento</span>

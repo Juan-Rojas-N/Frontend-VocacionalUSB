@@ -79,8 +79,8 @@ export function TestReviewPage() {
 
         <SectionCard title="Confirmación de envío" eyebrow="Submit">
           <ul className="bullet-list">
-            <li>El cálculo de resultados aún es mock, pero el flujo final ya está conectado.</li>
-            <li>La siguiente pantalla mostrará carreras sugeridas, gráficos y descarga PDF mock.</li>
+            <li>El cálculo de resultados aún es simulado, pero el flujo final ya está conectado.</li>
+            <li>La siguiente pantalla mostrará carreras recomendadas, gráficos y descarga simulada en PDF.</li>
             <li>Si cancelas ahora, puedes volver a la prueba y ajustar respuestas.</li>
           </ul>
           {errorMessage ? <div className="notice-card"><strong>Error</strong><p>{errorMessage}</p></div> : null}

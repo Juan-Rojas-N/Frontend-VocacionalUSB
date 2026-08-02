@@ -34,29 +34,29 @@ export function TestIntroPage() {
   }
 
   return (
-    <div className="before-test-page">
-      <section className="before-test-shell">
-        <div className="before-test-copy">
-          <span className="before-test-copy__eyebrow">Orientación vocacional digital</span>
-          <h1>Prepárate antes de comenzar la prueba</h1>
+    <div className="introduccion-prueba">
+      <section className="introduccion-prueba__panel">
+        <div className="introduccion-prueba__contenido">
+          <span className="introduccion-prueba__eyebrow">OrientaciÃ³n vocacional digital</span>
+          <h1>PrepÃ¡rate antes de comenzar la prueba</h1>
           <p>
-            Esta vista reúne el contexto previo, la forma de responder y los pasos que verás antes,
-            durante y después del test vocacional.
+            Esta vista reÃºne el contexto previo, la forma de responder y los pasos que verÃ¡s antes,
+            durante y despuÃ©s del test vocacional.
           </p>
-          <ul className="before-test-list">
+          <ul className="introduccion-prueba__lista">
             <li>Busca un espacio tranquilo y responde pensando en tus gustos reales.</li>
-            <li>Las tarjetas se recorren dentro de esta misma página, como en la guía.</li>
-            <li>El tiempo estimado es de 35 minutos y podrás revisar el progreso en sesión.</li>
+            <li>Las tarjetas se recorren dentro de esta misma pÃ¡gina, como en la guÃ­a.</li>
+            <li>El tiempo estimado es de 35 minutos y podrÃ¡s revisar el progreso en sesiÃ³n.</li>
           </ul>
           {errorMessage ? (
-            <div className="before-test-alert">
+            <div className="introduccion-prueba__alerta">
               <strong>No fue posible iniciar la prueba.</strong>
               <p>{errorMessage}</p>
             </div>
           ) : null}
           <button
             type="button"
-            className="before-test-start"
+            className="introduccion-prueba__accion"
             onClick={handleStart}
             disabled={isLoading}
           >
@@ -64,7 +64,7 @@ export function TestIntroPage() {
           </button>
         </div>
 
-        <div className="before-test-guide">
+        <div className="introduccion-prueba__guia">
           <GuideCardCarousel />
         </div>
       </section>

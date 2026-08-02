@@ -111,46 +111,46 @@ export function TestQuestionPage() {
 
   return (
     <>
-      <div className="session-mockup-page">
-        <section className="session-mockup-shell">
-          <div className="session-mockup-topline">
-            <div className="session-mockup-pills">
-              <span className="session-mockup-pill">Tamizaje vocacional</span>
-              <span className="session-mockup-pill session-mockup-pill--soft">
+      <div className="sesion-prueba">
+        <section className="sesion-prueba__panel">
+          <div className="sesion-prueba__encabezado">
+            <div className="sesion-prueba__badges">
+              <span className="sesion-prueba__badge">Prueba vocacional</span>
+              <span className="sesion-prueba__badge sesion-prueba__badge--suave">
                 {audienceLabel ?? 'Usuario interno'}
               </span>
             </div>
-            <div className="session-mockup-pills">
-              <span className="session-mockup-pill">{versionLabel ?? 'Versión v1.1'}</span>
-              <span className="session-mockup-pill">{attemptLabel ?? 'Intento #00011'}</span>
+            <div className="sesion-prueba__badges">
+              <span className="sesion-prueba__badge">{versionLabel ?? 'VersiÃ³n v1.1'}</span>
+              <span className="sesion-prueba__badge">{attemptLabel ?? 'Intento #00011'}</span>
             </div>
           </div>
 
-          <div className="session-mockup-status">
-            <div className="session-mockup-status__block">
+          <div className="progreso-prueba__resumen">
+            <div className="progreso-prueba__bloque">
               <strong>Tiempo transcurrido</strong>
               <p>{formatClock(elapsedSeconds)}</p>
             </div>
-            <div className="session-mockup-status__block session-mockup-status__block--right">
+            <div className="progreso-prueba__bloque progreso-prueba__bloque--alineado">
               <strong>Continuidad</strong>
-              <p>Si sales, deberás iniciar nuevamente</p>
+              <p>Si sales, deberÃ¡s iniciar nuevamente</p>
             </div>
           </div>
 
-          <div className="session-mockup-progress">
-            <div className="session-mockup-progress__fill" style={{ width: `${progress}%` }} />
+          <div className="progreso-prueba">
+            <div className="progreso-prueba__avance" style={{ width: `${progress}%` }} />
           </div>
 
-          <section className="session-mockup-question">
-            <div className="session-mockup-question__header">
+          <section className="pregunta-prueba">
+            <div className="pregunta-prueba__encabezado">
               <span>
                 Pregunta {currentIndex + 1} de {questions.length} | {progress}%
               </span>
             </div>
-            <div className="session-mockup-question__divider" />
+            <div className="pregunta-prueba__divisor" />
             <h1>{currentQuestion.prompt}</h1>
 
-            <div className="session-mockup-options">
+            <div className="respuesta-prueba__opciones">
               {currentQuestion.options.map((option) => {
                 const isSelected = answers[currentQuestion.id] === option.value
 
@@ -158,22 +158,22 @@ export function TestQuestionPage() {
                   <button
                     key={option.value}
                     type="button"
-                    className={`session-mockup-option${isSelected ? ' session-mockup-option--selected' : ''}`}
+                    className={`respuesta-prueba__opcion${isSelected ? ' respuesta-prueba__opcion--seleccionada' : ''}`}
                     onClick={() => answerQuestion(currentQuestion.id, option.value)}
                   >
                     <span
-                      className={`session-mockup-option__box${isSelected ? ' session-mockup-option__box--selected' : ''}`}
+                      className={`respuesta-prueba__indicador${isSelected ? ' respuesta-prueba__indicador--seleccionado' : ''}`}
                     />
-                    <span className="session-mockup-option__label">{option.label}</span>
+                    <span className="respuesta-prueba__etiqueta">{option.label}</span>
                   </button>
                 )
               })}
             </div>
 
-            <div className="session-mockup-actions">
+            <div className="navegacion-preguntas__acciones">
               <button
                 type="button"
-                className="session-mockup-button session-mockup-button--secondary"
+                className="navegacion-preguntas__boton navegacion-preguntas__boton--secundario"
                 onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
                 disabled={currentIndex === 0}
               >
@@ -181,7 +181,7 @@ export function TestQuestionPage() {
               </button>
               <button
                 type="button"
-                className="session-mockup-button session-mockup-button--primary"
+                className="navegacion-preguntas__boton navegacion-preguntas__boton--primario"
                 onClick={handleAdvance}
               >
                 {currentIndex === questions.length - 1 ? 'Finalizar' : 'Siguiente'}
@@ -189,14 +189,14 @@ export function TestQuestionPage() {
             </div>
           </section>
 
-          <div className="session-mockup-pagination">
+          <div className="navegacion-preguntas">
             {questions.map((question, index) => (
               <button
                 key={question.id}
                 type="button"
                 className={[
-                  'session-mockup-pagination__item',
-                  index === currentIndex ? 'session-mockup-pagination__item--active' : '',
+                  'navegacion-preguntas__item',
+                  index === currentIndex ? 'navegacion-preguntas__item--activo' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -207,7 +207,7 @@ export function TestQuestionPage() {
             ))}
             <button
               type="button"
-              className="session-mockup-pagination__item"
+              className="navegacion-preguntas__item"
               onClick={() => setResultsOpen(true)}
             >
               X
@@ -222,12 +222,12 @@ export function TestQuestionPage() {
         title="Antes de iniciar la prueba"
       >
         <p>
-          Lee con atención cada pregunta y responde con sinceridad. No hay respuestas correctas o
+          Lee con atenciÃ³n cada pregunta y responde con sinceridad. No hay respuestas correctas o
           incorrectas: el objetivo es identificar tus afinidades de manera clara.
         </p>
         <button
           type="button"
-          className="mockup-primary-button mockup-primary-button--small"
+          className="boton-principal boton-principal--pequeno"
           onClick={() => setIntroOpen(false)}
         >
           Comenzar
@@ -241,17 +241,17 @@ export function TestQuestionPage() {
             setResultsOpen(false)
           }
         }}
-        title="Tus resultados están listos"
+        title="Tus resultados estÃ¡n listos"
         theme="dark"
       >
         <p>
-          Al continuar verás un resumen vocacional con áreas destacadas, programas sugeridos y una
-          descarga mock del informe institucional.
+          Al continuar verÃ¡s un resumen vocacional con Ã¡reas destacadas, carreras recomendadas y una
+          descarga simulada del informe institucional.
         </p>
         {errorMessage ? <p className="form-field__error">{errorMessage}</p> : null}
         <button
           type="button"
-          className="mockup-dark-button"
+          className="sesion-prueba__accion-final"
           onClick={() => void handleFinish()}
           disabled={isSubmitting}
         >

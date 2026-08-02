@@ -7,15 +7,15 @@ import type {
 
 export const APP_ROUTES = {
   home: '/',
-  login: '/auth/login',
-  register: '/auth/register',
-  recoverPassword: '/auth/recover-password',
+  login: '/iniciar-sesion',
+  register: '/registro',
+  recoverPassword: '/recuperar-contrasena',
   profile: '/perfil',
-  testIntro: '/prueba',
-  testSession: '/prueba/sesion',
-  testReview: '/prueba/revision',
-  results: '/results',
-  admin: '/admin',
+  testIntro: '/prueba-vocacional',
+  testSession: '/prueba-vocacional/sesion',
+  testReview: '/prueba-vocacional/revision',
+  results: '/resultados',
+  admin: '/administracion',
 } as const
 
 export const LEGAL_COPY = {

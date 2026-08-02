@@ -33,32 +33,32 @@ export function ForgotPasswordPage() {
   })
 
   return (
-    <div className="mockup-auth-page">
-      <div className="mockup-auth-shell mockup-auth-shell--login">
-        <form className="mockup-auth-card mockup-auth-card--login" onSubmit={onSubmit}>
-          <div className="mockup-auth-card__header mockup-auth-card__header--login">
-            <h1>Recuperar acceso</h1>
-            <p>Simula el envío del enlace para el backend real</p>
+    <div className="autenticacion-layout">
+      <div className="autenticacion-contenedor autenticacion-contenedor--centrado">
+        <form className="autenticacion-panel autenticacion-panel--inicio-sesion" onSubmit={onSubmit}>
+          <div className="autenticacion-panel__encabezado autenticacion-panel__encabezado--inicio-sesion">
+            <h1>Recuperar contraseña</h1>
+            <p>Simula el envío del enlace en el entorno de demostración.</p>
           </div>
 
-          <div className="mockup-field-group">
+          <div className="autenticacion-campo">
             <label htmlFor="recover-email">Correo</label>
-            <input id="recover-email" className="mockup-input" type="email" {...register('email')} />
+            <input id="recover-email" className="autenticacion-control" type="email" {...register('email')} />
             {errors.email ? <small className="form-field__error">{errors.email.message}</small> : null}
           </div>
 
-          <div className="mockup-field-group">
+          <div className="autenticacion-campo">
             <label htmlFor="recover-document">Documento opcional</label>
-            <input id="recover-document" className="mockup-input" {...register('document')} />
+            <input id="recover-document" className="autenticacion-control" {...register('document')} />
           </div>
 
-          {statusMessage ? <div className="mockup-inline-error">{statusMessage}</div> : null}
+          {statusMessage ? <div className="autenticacion-mensaje">{statusMessage}</div> : null}
 
-          <button type="submit" className="mockup-primary-button" disabled={isSubmitting}>
+          <button type="submit" className="boton-principal" disabled={isSubmitting}>
             {isSubmitting ? 'Enviando...' : 'Recuperar contraseña'}
           </button>
 
-          <div className="mockup-auth-register-link">
+          <div className="autenticacion-enlace-secundario">
             <Link to={APP_ROUTES.login}>Volver al login</Link>
           </div>
         </form>

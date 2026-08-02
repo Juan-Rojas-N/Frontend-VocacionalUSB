@@ -11,7 +11,7 @@ export function ProfilePage() {
           <div>
             <span>Perfil de usuario</span>
             <h1>{sessionUser?.fullName ?? 'Usuario USB'}</h1>
-            <p>Vista propuesta para completar el flujo del menú de usuario.</p>
+            <p>Espacio disponible para consultar la información básica del usuario.</p>
           </div>
         </div>
 

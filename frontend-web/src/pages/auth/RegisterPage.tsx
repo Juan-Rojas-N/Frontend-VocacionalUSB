@@ -136,48 +136,48 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="mockup-auth-page mockup-auth-page--gradient">
-      <div className="mockup-auth-shell">
-        <form className="mockup-auth-card mockup-auth-card--register" onSubmit={onSubmit}>
-          <div className="mockup-auth-card__header">
-            <h1>Registro de Usuario</h1>
+    <div className="autenticacion-layout autenticacion-layout--registro">
+      <div className="autenticacion-contenedor">
+        <form className="autenticacion-panel autenticacion-panel--registro" onSubmit={onSubmit}>
+          <div className="autenticacion-panel__encabezado">
+            <h1>Registro de usuario</h1>
             <p>Completa el formulario para acceder a la prueba vocacional</p>
           </div>
 
-          <div className="mockup-register-grid">
-            <div className="mockup-field-group">
+          <div className="registro-usuario__cuadricula">
+            <div className="autenticacion-campo">
               <label htmlFor="firstName">Nombre</label>
-              <input id="firstName" className="mockup-input" placeholder="Nombre" {...register('firstName')} />
+              <input id="firstName" className="autenticacion-control" placeholder="Nombre" {...register('firstName')} />
               {errors.firstName ? <small className="form-field__error">{errors.firstName.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="lastName">Apellido</label>
-              <input id="lastName" className="mockup-input" placeholder="Apellido" {...register('lastName')} />
+              <input id="lastName" className="autenticacion-control" placeholder="Apellido" {...register('lastName')} />
               {errors.lastName ? <small className="form-field__error">{errors.lastName.message}</small> : null}
             </div>
-            <div className="mockup-field-group mockup-field-group--full">
+            <div className="autenticacion-campo autenticacion-campo--completo">
               <label htmlFor="email">Correo</label>
-              <input id="email" className="mockup-input" type="email" placeholder="usuario@example.com" {...register('email')} />
+              <input id="email" className="autenticacion-control" type="email" placeholder="usuario@example.com" {...register('email')} />
               {errors.email ? <small className="form-field__error">{errors.email.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="document">Identificación</label>
-              <input id="document" className="mockup-input" placeholder="xxxxxxxxxxx" {...register('document')} />
+              <input id="document" className="autenticacion-control" placeholder="xxxxxxxxxxx" {...register('document')} />
               {errors.document ? <small className="form-field__error">{errors.document.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="age">Edad</label>
-              <input id="age" className="mockup-input" type="number" placeholder="xx" {...register('age', { valueAsNumber: true })} />
+              <input id="age" className="autenticacion-control" type="number" placeholder="xx" {...register('age', { valueAsNumber: true })} />
               {errors.age ? <small className="form-field__error">{errors.age.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="phone">Teléfono</label>
-              <input id="phone" className="mockup-input" placeholder="xxxxxxxxxx" {...register('phone')} />
+              <input id="phone" className="autenticacion-control" placeholder="xxxxxxxxxx" {...register('phone')} />
               {errors.phone ? <small className="form-field__error">{errors.phone.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="gender">Género</label>
-              <select id="gender" className="mockup-input" {...register('gender')}>
+              <select id="gender" className="autenticacion-control" {...register('gender')}>
                 <option value="">-</option>
                 {GENDER_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -187,14 +187,14 @@ export function RegisterPage() {
               </select>
               {errors.gender ? <small className="form-field__error">{errors.gender.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="genderOther">En caso de otro ¿cuál?</label>
-              <input id="genderOther" className="mockup-input" placeholder="-" {...register('genderOther')} />
+              <input id="genderOther" className="autenticacion-control" placeholder="-" {...register('genderOther')} />
               {selectedGender === 'Otro' && errors.genderOther ? <small className="form-field__error">{errors.genderOther.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="department">Departamento</label>
-              <select id="department" className="mockup-input" {...register('department')}>
+              <select id="department" className="autenticacion-control" {...register('department')}>
                 <option value="">-</option>
                 {DEPARTMENT_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -204,9 +204,9 @@ export function RegisterPage() {
               </select>
               {errors.department ? <small className="form-field__error">{errors.department.message}</small> : null}
             </div>
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="city">Ciudad</label>
-              <select id="city" className="mockup-input" {...register('city')}>
+              <select id="city" className="autenticacion-control" {...register('city')}>
                 <option value="">-</option>
                 {CITY_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -218,14 +218,14 @@ export function RegisterPage() {
             </div>
             {(belongsToUniversity || isActiveStudent) ? (
               <>
-                <div className="mockup-field-group">
+                <div className="autenticacion-campo">
                   <label htmlFor="currentCareer">Carrera actual</label>
-                  <input id="currentCareer" className="mockup-input" placeholder="Programa académico" {...register('currentCareer')} />
+                  <input id="currentCareer" className="autenticacion-control" placeholder="Programa académico" {...register('currentCareer')} />
                   {errors.currentCareer ? <small className="form-field__error">{errors.currentCareer.message}</small> : null}
                 </div>
-                <div className="mockup-field-group">
+                <div className="autenticacion-campo">
                   <label htmlFor="currentSemester">Semestre actual</label>
-                  <select id="currentSemester" className="mockup-input" {...register('currentSemester')}>
+                  <select id="currentSemester" className="autenticacion-control" {...register('currentSemester')}>
                     <option value="">-</option>
                     {SEMESTER_OPTIONS.map((option) => (
                       <option key={option} value={option}>
@@ -237,44 +237,44 @@ export function RegisterPage() {
                 </div>
               </>
             ) : null}
-            <div className="mockup-field-group mockup-field-group--full">
+            <div className="autenticacion-campo autenticacion-campo--completo">
               <label htmlFor="password">Contraseña</label>
-              <div className="mockup-input mockup-input--with-icon">
+              <div className="autenticacion-control autenticacion-control--con-icono">
                 <input id="password" type="password" placeholder="Ingresa tu contraseña" {...register('password')} />
-                <span aria-hidden="true">◉</span>
+                <span aria-hidden="true"></span>
               </div>
               {errors.password ? <small className="form-field__error">{errors.password.message}</small> : null}
             </div>
           </div>
 
-          <div className="mockup-consent-stack">
-            <label className="mockup-consent-line">
+          <div className="registro-usuario__consentimientos">
+            <label className="registro-usuario__consentimiento-linea">
               <input type="checkbox" {...register('belongsToUniversity')} />
               <span>¿Se encuentra usted actualmente inscrito en la Universidad de San Buenaventura?</span>
             </label>
-            <label className="mockup-consent-line">
+            <label className="registro-usuario__consentimiento-linea">
               <input type="checkbox" {...register('isActiveStudent')} />
               <span>¿Es usted estudiante activo de algún programa de la Universidad de San Buenaventura?</span>
             </label>
-            <label className="mockup-consent-box">
+            <label className="registro-usuario__consentimiento-destacado">
               <input type="checkbox" {...register('dataConsent')} />
               <span>{LEGAL_COPY.dataPolicy}</span>
             </label>
             {errors.dataConsent ? <small className="form-field__error">{errors.dataConsent.message}</small> : null}
-            <label className="mockup-consent-box">
+            <label className="registro-usuario__consentimiento-destacado">
               <input type="checkbox" {...register('termsAccepted')} />
               <span>Declaro haber leído y aceptado las Políticas de Tratamiento de Datos Personales, así como los Términos y Condiciones de la institución.</span>
             </label>
             {errors.termsAccepted ? <small className="form-field__error">{errors.termsAccepted.message}</small> : null}
           </div>
 
-          {errorMessage ? <div className="mockup-inline-error">{errorMessage}</div> : null}
+          {errorMessage ? <div className="autenticacion-mensaje">{errorMessage}</div> : null}
 
-          <div className="mockup-register-actions">
-            <Link to={APP_ROUTES.home} className="mockup-secondary-button">
+          <div className="registro-usuario__acciones">
+            <Link to={APP_ROUTES.home} className="registro-usuario__accion-secundaria">
               Cancelar
             </Link>
-            <button type="submit" className="mockup-primary-button" disabled={isSubmitting}>
+            <button type="submit" className="boton-principal" disabled={isSubmitting}>
               {isSubmitting ? 'Registrando...' : 'Registrarse'}
             </button>
           </div>
@@ -284,9 +284,9 @@ export function RegisterPage() {
       <InstitutionalModal open={adultModalOpen} onClose={() => setAdultModalOpen(false)}>
         <p>
           Esta aplicación está dirigida para mayores de 18 años. Al aceptar, confirmas que cuentas
-          con mayoría de edad para continuar con el proceso.
+          con mayorí­a de edad para continuar con el proceso.
         </p>
-        <label className="mockup-checkline mockup-checkline--center">
+        <label className="autenticacion-seleccion autenticacion-seleccion--centrada">
           <input
             type="checkbox"
             checked={adultConfirmed}
@@ -296,7 +296,7 @@ export function RegisterPage() {
         </label>
         <button
           type="button"
-          className="mockup-primary-button mockup-primary-button--small"
+          className="boton-principal boton-principal--pequeno"
           disabled={!adultConfirmed || isSubmitting}
           onClick={() => void completeRegister()}
         >

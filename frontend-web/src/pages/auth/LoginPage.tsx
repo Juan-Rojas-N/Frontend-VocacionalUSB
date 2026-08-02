@@ -8,7 +8,7 @@ import { useAuthStore } from '../../stores/authStore'
 
 const loginSchema = z.object({
   email: z.email('Ingresa un correo válido.'),
-  password: z.string().min(6, 'Ingresa tu contraseña mock.'),
+  password: z.string().min(6, 'Ingresa tu contraseña.'),
   rememberMe: z.boolean(),
 })
 
@@ -50,20 +50,23 @@ export function LoginPage() {
   })
 
   return (
-    <div className="mockup-auth-page mockup-auth-page--login">
-      <div className="mockup-auth-shell mockup-auth-shell--login">
-        <form className="mockup-auth-card mockup-auth-card--login mockup-auth-card--login-gradient" onSubmit={onSubmit}>
-          <div className="mockup-login-hero">
+    <div className="autenticacion-layout autenticacion-layout--inicio-sesion">
+      <div className="autenticacion-contenedor autenticacion-contenedor--centrado">
+        <form
+          className="autenticacion-panel autenticacion-panel--inicio-sesion autenticacion-panel--superficie-clara"
+          onSubmit={onSubmit}
+        >
+          <div className="inicio-sesion__hero">
             <h1>Iniciar sesión</h1>
             <p>Accede a la plataforma institucional de orientación vocacional</p>
           </div>
 
-          <div className="mockup-login-body">
-            <div className="mockup-field-group">
+          <div className="inicio-sesion__cuerpo">
+            <div className="autenticacion-campo">
               <label htmlFor="login-email">Correo</label>
               <input
                 id="login-email"
-                className="mockup-input"
+                className="autenticacion-control"
                 type="email"
                 placeholder="usuario@example.com"
                 {...register('email')}
@@ -71,46 +74,50 @@ export function LoginPage() {
               {errors.email ? <small className="form-field__error">{errors.email.message}</small> : null}
             </div>
 
-            <div className="mockup-field-group">
+            <div className="autenticacion-campo">
               <label htmlFor="login-password">Contraseña</label>
-              <div className="mockup-input mockup-input--with-icon mockup-input--compact-icon">
+              <div className="autenticacion-control autenticacion-control--con-icono autenticacion-control--icono-compacto">
                 <input
                   id="login-password"
                   type="password"
                   placeholder="Ingresa tu contraseña"
                   {...register('password')}
                 />
-                <span aria-hidden="true" className="mockup-login-eye">◉</span>
+                <span aria-hidden="true" className="inicio-sesion__icono-visor"></span>
               </div>
               {errors.password ? <small className="form-field__error">{errors.password.message}</small> : null}
             </div>
 
-            <div className="mockup-auth-row mockup-auth-row--login">
-              <label className="mockup-checkline mockup-checkline--login">
+            <div className="inicio-sesion__opciones inicio-sesion__opciones--principal">
+              <label className="autenticacion-seleccion inicio-sesion__seleccion">
                 <input type="checkbox" {...register('rememberMe')} />
                 <span>Recordarme</span>
               </label>
               <Link to={APP_ROUTES.recoverPassword}>¿Olvidaste tu contraseña?</Link>
             </div>
 
-            {errorMessage ? <div className="mockup-inline-error">{errorMessage}</div> : null}
+            {errorMessage ? <div className="autenticacion-mensaje">{errorMessage}</div> : null}
 
-            <button type="submit" className="mockup-primary-button mockup-primary-button--login" disabled={isSubmitting}>
+            <button
+              type="submit"
+              className="boton-principal boton-principal--inicio-sesion"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? 'Validando...' : 'Ingresar'}
             </button>
 
-            <div className="mockup-auth-divider">
+            <div className="inicio-sesion__divisor">
               <span />
-              <p>acceso seguro</p>
+              <p>Acceso seguro</p>
               <span />
             </div>
 
-            <div className="mockup-auth-register-link mockup-auth-register-link--login">
+            <div className="autenticacion-enlace-secundario autenticacion-enlace-secundario--inicio-sesion">
               <span>¿No tienes cuenta?</span>
               <Link to={APP_ROUTES.register}>Regístrate</Link>
             </div>
 
-            <small className="mockup-auth-legend mockup-auth-legend--login">
+            <small className="inicio-sesion__leyenda inicio-sesion__leyenda--contraste">
               UNIVERSIDAD DE SAN BUENAVENTURA VIGILADA MINIEDUCACIÓN
             </small>
           </div>
