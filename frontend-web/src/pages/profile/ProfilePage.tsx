@@ -21,16 +21,20 @@ export function ProfilePage() {
             <strong>{sessionUser?.email}</strong>
           </div>
           <div>
+            <span>Nombre de usuario</span>
+            <strong>{sessionUser?.username ?? 'Pendiente de asignación'}</strong>
+          </div>
+          <div>
             <span>Documento</span>
             <strong>{sessionUser?.document}</strong>
           </div>
           <div>
             <span>Ciudad</span>
-            <strong>{sessionUser?.city}</strong>
+            <strong>{sessionUser?.municipalityName}</strong>
           </div>
           <div>
             <span>Departamento</span>
-            <strong>{sessionUser?.department}</strong>
+            <strong>{sessionUser?.departmentName}</strong>
           </div>
         </div>
       </section>

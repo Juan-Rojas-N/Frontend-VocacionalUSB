@@ -3,12 +3,13 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { PasswordField } from '../../components/common/PasswordField'
 import { APP_ROUTES } from '../../constants'
 import { useAuthStore } from '../../stores/authStore'
 
 const loginSchema = z.object({
-  email: z.email('Ingresa un correo válido.'),
-  password: z.string().min(6, 'Ingresa tu contraseña.'),
+  identifier: z.string().trim().min(1, 'Ingresa tu correo o nombre de usuario.'),
+  password: z.string().min(1, 'Ingresa tu contraseña.'),
   rememberMe: z.boolean(),
 })
 
@@ -28,7 +29,7 @@ export function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      identifier: '',
       password: '',
       rememberMe: false,
     },
@@ -63,30 +64,26 @@ export function LoginPage() {
 
           <div className="inicio-sesion__cuerpo">
             <div className="autenticacion-campo">
-              <label htmlFor="login-email">Correo</label>
+              <label htmlFor="login-identifier">Correo o nombre de usuario</label>
               <input
-                id="login-email"
+                id="login-identifier"
                 className="autenticacion-control"
-                type="email"
-                placeholder="usuario@example.com"
-                {...register('email')}
+                type="text"
+                placeholder="Ingresa tu correo o nombre de usuario"
+                {...register('identifier')}
               />
-              {errors.email ? <small className="form-field__error">{errors.email.message}</small> : null}
+              {errors.identifier ? (
+                <small className="form-field__error">{errors.identifier.message}</small>
+              ) : null}
             </div>
 
-            <div className="autenticacion-campo">
-              <label htmlFor="login-password">Contraseña</label>
-              <div className="autenticacion-control autenticacion-control--con-icono autenticacion-control--icono-compacto">
-                <input
-                  id="login-password"
-                  type="password"
-                  placeholder="Ingresa tu contraseña"
-                  {...register('password')}
-                />
-                <span aria-hidden="true" className="inicio-sesion__icono-visor"></span>
-              </div>
-              {errors.password ? <small className="form-field__error">{errors.password.message}</small> : null}
-            </div>
+            <PasswordField
+              id="login-password"
+              label="Contraseña"
+              placeholder="Ingresa tu contraseña"
+              registration={register('password')}
+              error={errors.password?.message}
+            />
 
             <div className="inicio-sesion__opciones inicio-sesion__opciones--principal">
               <label className="autenticacion-seleccion inicio-sesion__seleccion">

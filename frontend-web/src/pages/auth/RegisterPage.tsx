@@ -1,64 +1,144 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { PasswordField } from '../../components/common/PasswordField'
 import { InstitutionalModal } from '../../components/common/InstitutionalModal'
 import {
+  ACADEMIC_PROGRAM_GROUPS,
   APP_ROUTES,
-  CITY_OPTIONS,
-  DEPARTMENT_OPTIONS,
   GENDER_OPTIONS,
+  GENDER_OTHER_MAX_LENGTH,
+  INSTITUTION_LINK_OPTIONS,
+  INSTITUTION_RELATIONSHIP_OPTIONS,
   LEGAL_COPY,
+  LEGAL_DOCUMENT_VERSIONS,
+  LEGAL_LINKS,
   SEMESTER_OPTIONS,
+  USERNAME_MAX_LENGTH,
 } from '../../constants'
+import { MockValidationError } from '../../services/errors'
 import { useAuthStore } from '../../stores/authStore'
+import {
+  getAdultBirthDateLimit,
+  getBirthDateValidationError,
+  getPasswordRequirementText,
+  getPasswordValidationError,
+} from '../../utils/authValidation'
+import {
+  getDepartmentOptions,
+  getMunicipalityOptions,
+  isMunicipalityValidForDepartment,
+} from '../../utils/catalogs'
+
+const departmentOptions = getDepartmentOptions()
+const adultBirthDateLimit = getAdultBirthDateLimit()
 
 const registerSchema = z
   .object({
-    firstName: z.string().min(2, 'Ingresa el nombre.'),
-    lastName: z.string().min(2, 'Ingresa los apellidos.'),
-    document: z.string().min(6, 'Ingresa un documento válido.'),
-    age: z.number().min(18, 'Debes ser mayor de edad.'),
+    firstName: z.string().trim().min(2, 'Ingresa el nombre.'),
+    lastName: z.string().trim().min(2, 'Ingresa los apellidos.'),
+    username: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa el nombre de usuario.')
+      .max(USERNAME_MAX_LENGTH, `El nombre de usuario no puede superar ${USERNAME_MAX_LENGTH} caracteres.`),
+    document: z.string().trim().min(6, 'Ingresa un documento válido.'),
+    birthDate: z.string().min(1, 'Selecciona la fecha de nacimiento.'),
     email: z.email('Ingresa un correo válido.'),
-    phone: z.string().min(7, 'Ingresa un teléfono válido.'),
-    department: z.string().min(1, 'Selecciona un departamento.'),
-    city: z.string().min(1, 'Selecciona una ciudad.'),
+    phone: z.string().trim().min(7, 'Ingresa un teléfono válido.'),
+    departmentId: z.string().min(1, 'Selecciona un departamento.'),
+    municipalityId: z.string().min(1, 'Selecciona una ciudad.'),
     gender: z.string().min(1, 'Selecciona un género.'),
-    genderOther: z.string().optional(),
-    belongsToUniversity: z.boolean(),
-    isActiveStudent: z.boolean(),
-    currentCareer: z.string().optional(),
-    currentSemester: z.string().optional(),
-    dataConsent: z.boolean().refine((value) => value, {
-      message: 'Debes aceptar el tratamiento de datos.',
+    genderOther: z
+      .string()
+      .max(
+        GENDER_OTHER_MAX_LENGTH,
+        `El detalle de género no puede superar ${GENDER_OTHER_MAX_LENGTH} caracteres.`,
+      )
+      .optional(),
+    institutionLinkedChoice: z.enum(['Si', 'No'], {
+      error: () => ({ message: 'Selecciona si estás vinculado a la universidad.' }),
+    }),
+    institutionRelationship: z.enum(['Inscrito', 'Estudiante']).optional(),
+    academicProgramId: z.string().optional(),
+    semester: z.string().optional(),
+    personalDataConsentAccepted: z.boolean().refine((value) => value, {
+      message: 'Debes autorizar el tratamiento de datos personales.',
+    }),
+    privacyPolicyAccepted: z.boolean().refine((value) => value, {
+      message: 'Debes aceptar las políticas de uso y privacidad.',
     }),
     termsAccepted: z.boolean().refine((value) => value, {
-      message: 'Debes aceptar políticas y términos.',
+      message: 'Debes aceptar los términos y condiciones.',
     }),
-    password: z.string().min(8, 'La contraseña debe tener mínimo 8 caracteres.'),
+    password: z.string(),
+    confirmPassword: z.string().min(1, 'Confirma la contraseña.'),
   })
   .superRefine((values, ctx) => {
+    const passwordError = getPasswordValidationError(values.password)
+    if (passwordError) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['password'],
+        message: passwordError,
+      })
+    }
+
+    const birthDateError = getBirthDateValidationError(values.birthDate)
+    if (birthDateError) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['birthDate'],
+        message: birthDateError,
+      })
+    }
+
+    if (values.confirmPassword !== values.password) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['confirmPassword'],
+        message: 'La confirmación debe coincidir exactamente con la contraseña.',
+      })
+    }
+
     if (values.gender === 'Otro' && !values.genderOther?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['genderOther'],
-        message: 'Describe el género seleccionado.',
+        message: 'Indica otra identidad de género.',
       })
     }
 
-    if (values.belongsToUniversity || values.isActiveStudent) {
-      if (!values.currentCareer?.trim()) {
+    if (!isMunicipalityValidForDepartment(values.departmentId, values.municipalityId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['municipalityId'],
+        message: 'Selecciona una ciudad válida para el departamento elegido.',
+      })
+    }
+
+    if (values.institutionLinkedChoice === 'Si' && !values.institutionRelationship) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['institutionRelationship'],
+        message: 'Selecciona el tipo de vinculación.',
+      })
+    }
+
+    if (values.institutionRelationship === 'Estudiante') {
+      if (!values.academicProgramId) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ['currentCareer'],
-          message: 'Indica la carrera actual.',
+          path: ['academicProgramId'],
+          message: 'Selecciona el programa actual.',
         })
       }
-      if (!values.currentSemester?.trim()) {
+      if (!values.semester) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ['currentSemester'],
+          path: ['semester'],
           message: 'Selecciona el semestre actual.',
         })
       }
@@ -75,25 +155,82 @@ export function RegisterPage() {
   const [pendingValues, setPendingValues] = useState<RegisterFormValues | null>(null)
   const [adultModalOpen, setAdultModalOpen] = useState(false)
   const [adultConfirmed, setAdultConfirmed] = useState(false)
+  const previousDepartmentId = useRef<string | undefined>(undefined)
 
   const {
     register,
     handleSubmit,
     control,
+    clearErrors,
+    setError,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      belongsToUniversity: false,
-      isActiveStudent: false,
-      dataConsent: false,
+      institutionLinkedChoice: 'No',
+      personalDataConsentAccepted: false,
+      privacyPolicyAccepted: false,
       termsAccepted: false,
     },
   })
 
   const selectedGender = useWatch({ control, name: 'gender' })
-  const belongsToUniversity = useWatch({ control, name: 'belongsToUniversity' })
-  const isActiveStudent = useWatch({ control, name: 'isActiveStudent' })
+  const institutionLinkedChoice = useWatch({ control, name: 'institutionLinkedChoice' })
+  const institutionRelationship = useWatch({ control, name: 'institutionRelationship' })
+  const departmentId = useWatch({ control, name: 'departmentId' })
+  const municipalityId = useWatch({ control, name: 'municipalityId' })
+
+  const municipalityOptions = getMunicipalityOptions(departmentId)
+  const showAcademicFields =
+    institutionLinkedChoice === 'Si' && institutionRelationship === 'Estudiante'
+
+  useEffect(() => {
+    if (selectedGender !== 'Otro') {
+      setValue('genderOther', '')
+      clearErrors('genderOther')
+    }
+  }, [clearErrors, selectedGender, setValue])
+
+  useEffect(() => {
+    if (institutionLinkedChoice === 'No') {
+      setValue('institutionRelationship', undefined)
+      setValue('academicProgramId', '')
+      setValue('semester', '')
+      clearErrors(['institutionRelationship', 'academicProgramId', 'semester'])
+    }
+  }, [clearErrors, institutionLinkedChoice, setValue])
+
+  useEffect(() => {
+    if (institutionRelationship !== 'Estudiante') {
+      setValue('academicProgramId', '')
+      setValue('semester', '')
+      clearErrors(['academicProgramId', 'semester'])
+    }
+  }, [clearErrors, institutionRelationship, setValue])
+
+  useEffect(() => {
+    if (previousDepartmentId.current === undefined) {
+      previousDepartmentId.current = departmentId
+      return
+    }
+
+    if (previousDepartmentId.current !== departmentId) {
+      setValue('municipalityId', '')
+      clearErrors('municipalityId')
+      previousDepartmentId.current = departmentId
+      return
+    }
+
+    if (
+      municipalityId &&
+      departmentId &&
+      !isMunicipalityValidForDepartment(departmentId, municipalityId)
+    ) {
+      setValue('municipalityId', '')
+      clearErrors('municipalityId')
+    }
+  }, [clearErrors, departmentId, municipalityId, setValue])
 
   const onSubmit = handleSubmit(async (values) => {
     setPendingValues(values)
@@ -109,27 +246,47 @@ export function RegisterPage() {
     try {
       setIsSubmitting(true)
       setErrorMessage('')
+      const shouldIncludeAcademicData =
+        pendingValues.institutionLinkedChoice === 'Si' &&
+        pendingValues.institutionRelationship === 'Estudiante'
       await registerUser({
-        firstName: pendingValues.firstName,
-        lastName: pendingValues.lastName,
-        document: pendingValues.document,
-        age: pendingValues.age,
-        email: pendingValues.email,
-        phone: pendingValues.phone,
-        department: pendingValues.department,
-        city: pendingValues.city,
+        firstName: pendingValues.firstName.trim(),
+        lastName: pendingValues.lastName.trim(),
+        username: pendingValues.username.trim(),
+        document: pendingValues.document.trim(),
+        birthDate: pendingValues.birthDate,
+        email: pendingValues.email.trim(),
+        phone: pendingValues.phone.trim(),
+        departmentId: pendingValues.departmentId,
+        municipalityId: pendingValues.municipalityId,
         gender: pendingValues.gender as 'Masculino' | 'Femenino' | 'Prefiero no decirlo' | 'Otro',
-        genderOther: pendingValues.genderOther,
-        belongsToUniversity: pendingValues.belongsToUniversity || pendingValues.isActiveStudent,
-        currentCareer: pendingValues.currentCareer,
-        currentSemester: pendingValues.currentSemester,
-        dataConsent: pendingValues.dataConsent,
+        genderOther: pendingValues.gender === 'Otro' ? pendingValues.genderOther?.trim() : undefined,
+        institutionLinked: pendingValues.institutionLinkedChoice === 'Si',
+        institutionRelationship:
+          pendingValues.institutionLinkedChoice === 'Si'
+            ? pendingValues.institutionRelationship
+            : undefined,
+        academicProgramId: shouldIncludeAcademicData ? pendingValues.academicProgramId : undefined,
+        semester: shouldIncludeAcademicData ? pendingValues.semester : undefined,
+        personalDataConsentAccepted: pendingValues.personalDataConsentAccepted,
+        privacyPolicyAccepted: pendingValues.privacyPolicyAccepted,
+        termsAccepted: pendingValues.termsAccepted,
+        personalDataConsentVersion: LEGAL_DOCUMENT_VERSIONS.personalDataConsent,
+        privacyPolicyVersion: LEGAL_DOCUMENT_VERSIONS.privacyPolicy,
+        termsVersion: LEGAL_DOCUMENT_VERSIONS.terms,
         password: pendingValues.password,
       })
       setAdultModalOpen(false)
       navigate(APP_ROUTES.testIntro)
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'No se pudo registrar el usuario.')
+      if (error instanceof MockValidationError) {
+        for (const [field, message] of Object.entries(error.fieldErrors)) {
+          setError(field as keyof RegisterFormValues, { type: 'server', message })
+        }
+        setErrorMessage(error.message)
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'No se pudo registrar el usuario.')
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -147,85 +304,214 @@ export function RegisterPage() {
           <div className="registro-usuario__cuadricula">
             <div className="autenticacion-campo">
               <label htmlFor="firstName">Nombre</label>
-              <input id="firstName" className="autenticacion-control" placeholder="Nombre" {...register('firstName')} />
+              <input
+                id="firstName"
+                className="autenticacion-control"
+                placeholder="Nombre"
+                {...register('firstName')}
+              />
               {errors.firstName ? <small className="form-field__error">{errors.firstName.message}</small> : null}
             </div>
+
             <div className="autenticacion-campo">
               <label htmlFor="lastName">Apellido</label>
-              <input id="lastName" className="autenticacion-control" placeholder="Apellido" {...register('lastName')} />
+              <input
+                id="lastName"
+                className="autenticacion-control"
+                placeholder="Apellido"
+                {...register('lastName')}
+              />
               {errors.lastName ? <small className="form-field__error">{errors.lastName.message}</small> : null}
             </div>
-            <div className="autenticacion-campo autenticacion-campo--completo">
+
+            <div className="autenticacion-campo">
+              <label htmlFor="username">Nombre de usuario</label>
+              <input
+                id="username"
+                className="autenticacion-control"
+                placeholder="Ingresa tu nombre de usuario"
+                {...register('username')}
+              />
+              {errors.username ? <small className="form-field__error">{errors.username.message}</small> : null}
+            </div>
+
+            <div className="autenticacion-campo">
               <label htmlFor="email">Correo</label>
-              <input id="email" className="autenticacion-control" type="email" placeholder="usuario@example.com" {...register('email')} />
+              <input
+                id="email"
+                className="autenticacion-control"
+                type="email"
+                placeholder="usuario@example.com"
+                {...register('email')}
+              />
               {errors.email ? <small className="form-field__error">{errors.email.message}</small> : null}
             </div>
+
             <div className="autenticacion-campo">
               <label htmlFor="document">Identificación</label>
-              <input id="document" className="autenticacion-control" placeholder="xxxxxxxxxxx" {...register('document')} />
+              <input
+                id="document"
+                className="autenticacion-control"
+                placeholder="xxxxxxxxxxx"
+                {...register('document')}
+              />
               {errors.document ? <small className="form-field__error">{errors.document.message}</small> : null}
             </div>
+
             <div className="autenticacion-campo">
-              <label htmlFor="age">Edad</label>
-              <input id="age" className="autenticacion-control" type="number" placeholder="xx" {...register('age', { valueAsNumber: true })} />
-              {errors.age ? <small className="form-field__error">{errors.age.message}</small> : null}
+              <label htmlFor="birthDate">Fecha de nacimiento</label>
+              <input
+                id="birthDate"
+                className="autenticacion-control"
+                type="date"
+                max={adultBirthDateLimit}
+                {...register('birthDate')}
+              />
+              {errors.birthDate ? (
+                <small className="form-field__error">{errors.birthDate.message}</small>
+              ) : null}
             </div>
+
             <div className="autenticacion-campo">
               <label htmlFor="phone">Teléfono</label>
-              <input id="phone" className="autenticacion-control" placeholder="xxxxxxxxxx" {...register('phone')} />
+              <input
+                id="phone"
+                className="autenticacion-control"
+                placeholder="xxxxxxxxxx"
+                {...register('phone')}
+              />
               {errors.phone ? <small className="form-field__error">{errors.phone.message}</small> : null}
             </div>
+
             <div className="autenticacion-campo">
               <label htmlFor="gender">Género</label>
               <select id="gender" className="autenticacion-control" {...register('gender')}>
                 <option value="">-</option>
                 {GENDER_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
               {errors.gender ? <small className="form-field__error">{errors.gender.message}</small> : null}
             </div>
+
+            {selectedGender === 'Otro' ? (
+              <div className="autenticacion-campo">
+                <label htmlFor="genderOther">Indique otro</label>
+                <input
+                  id="genderOther"
+                  className="autenticacion-control"
+                  placeholder="Indica otro género"
+                  {...register('genderOther')}
+                />
+                {errors.genderOther ? (
+                  <small className="form-field__error">{errors.genderOther.message}</small>
+                ) : null}
+              </div>
+            ) : null}
+
             <div className="autenticacion-campo">
-              <label htmlFor="genderOther">En caso de otro ¿cuál?</label>
-              <input id="genderOther" className="autenticacion-control" placeholder="-" {...register('genderOther')} />
-              {selectedGender === 'Otro' && errors.genderOther ? <small className="form-field__error">{errors.genderOther.message}</small> : null}
-            </div>
-            <div className="autenticacion-campo">
-              <label htmlFor="department">Departamento</label>
-              <select id="department" className="autenticacion-control" {...register('department')}>
+              <label htmlFor="departmentId">Departamento</label>
+              <select id="departmentId" className="autenticacion-control" {...register('departmentId')}>
                 <option value="">-</option>
-                {DEPARTMENT_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                {departmentOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
-              {errors.department ? <small className="form-field__error">{errors.department.message}</small> : null}
+              {errors.departmentId ? (
+                <small className="form-field__error">{errors.departmentId.message}</small>
+              ) : null}
             </div>
+
             <div className="autenticacion-campo">
-              <label htmlFor="city">Ciudad</label>
-              <select id="city" className="autenticacion-control" {...register('city')}>
-                <option value="">-</option>
-                {CITY_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+              <label htmlFor="municipalityId">Ciudad</label>
+              <select
+                id="municipalityId"
+                className="autenticacion-control"
+                disabled={!departmentId}
+                {...register('municipalityId')}
+              >
+                <option value="">{departmentId ? '-' : 'Selecciona primero el departamento'}</option>
+                {municipalityOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
-              {errors.city ? <small className="form-field__error">{errors.city.message}</small> : null}
+              {errors.municipalityId ? (
+                <small className="form-field__error">{errors.municipalityId.message}</small>
+              ) : null}
             </div>
-            {(belongsToUniversity || isActiveStudent) ? (
+
+            <div className="autenticacion-campo autenticacion-campo--completo">
+              <span className="autenticacion-campo__label">
+                ¿Está vinculado actualmente con la Universidad de San Buenaventura?
+              </span>
+              <div className="autenticacion-opciones">
+                {INSTITUTION_LINK_OPTIONS.map((option) => (
+                  <label key={option.value} className="autenticacion-seleccion">
+                    <input type="radio" value={option.value} {...register('institutionLinkedChoice')} />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.institutionLinkedChoice ? (
+                <small className="form-field__error">{errors.institutionLinkedChoice.message}</small>
+              ) : null}
+            </div>
+
+            {institutionLinkedChoice === 'Si' ? (
+              <div className="autenticacion-campo">
+                <label htmlFor="institutionRelationship">Tipo de vinculación</label>
+                <select
+                  id="institutionRelationship"
+                  className="autenticacion-control"
+                  {...register('institutionRelationship')}
+                >
+                  <option value="">-</option>
+                  {INSTITUTION_RELATIONSHIP_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.institutionRelationship ? (
+                  <small className="form-field__error">{errors.institutionRelationship.message}</small>
+                ) : null}
+              </div>
+            ) : null}
+
+            {showAcademicFields ? (
               <>
                 <div className="autenticacion-campo">
-                  <label htmlFor="currentCareer">Carrera actual</label>
-                  <input id="currentCareer" className="autenticacion-control" placeholder="Programa académico" {...register('currentCareer')} />
-                  {errors.currentCareer ? <small className="form-field__error">{errors.currentCareer.message}</small> : null}
+                  <label htmlFor="academicProgramId">Programa</label>
+                  <select
+                    id="academicProgramId"
+                    className="autenticacion-control"
+                    {...register('academicProgramId')}
+                  >
+                    <option value="">-</option>
+                    {ACADEMIC_PROGRAM_GROUPS.map((group) => (
+                      <optgroup key={group.id} label={group.label}>
+                        {group.programs.map((program) => (
+                          <option key={program.id} value={program.id}>
+                            {program.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                  {errors.academicProgramId ? (
+                    <small className="form-field__error">{errors.academicProgramId.message}</small>
+                  ) : null}
                 </div>
+
                 <div className="autenticacion-campo">
-                  <label htmlFor="currentSemester">Semestre actual</label>
-                  <select id="currentSemester" className="autenticacion-control" {...register('currentSemester')}>
+                  <label htmlFor="semester">Semestre</label>
+                  <select id="semester" className="autenticacion-control" {...register('semester')}>
                     <option value="">-</option>
                     {SEMESTER_OPTIONS.map((option) => (
                       <option key={option} value={option}>
@@ -233,39 +519,65 @@ export function RegisterPage() {
                       </option>
                     ))}
                   </select>
-                  {errors.currentSemester ? <small className="form-field__error">{errors.currentSemester.message}</small> : null}
+                  {errors.semester ? <small className="form-field__error">{errors.semester.message}</small> : null}
                 </div>
               </>
             ) : null}
-            <div className="autenticacion-campo autenticacion-campo--completo">
-              <label htmlFor="password">Contraseña</label>
-              <div className="autenticacion-control autenticacion-control--con-icono">
-                <input id="password" type="password" placeholder="Ingresa tu contraseña" {...register('password')} />
-                <span aria-hidden="true"></span>
-              </div>
-              {errors.password ? <small className="form-field__error">{errors.password.message}</small> : null}
-            </div>
+
+            <PasswordField
+              id="password"
+              label="Contraseña"
+              placeholder="Ingresa tu contraseña"
+              registration={register('password')}
+              error={errors.password?.message}
+              helpText={getPasswordRequirementText()}
+            />
+
+            <PasswordField
+              id="confirmPassword"
+              label="Confirmar contraseña"
+              placeholder="Vuelve a escribir tu contraseña"
+              registration={register('confirmPassword')}
+              error={errors.confirmPassword?.message}
+            />
           </div>
 
           <div className="registro-usuario__consentimientos">
-            <label className="registro-usuario__consentimiento-linea">
-              <input type="checkbox" {...register('belongsToUniversity')} />
-              <span>¿Se encuentra usted actualmente inscrito en la Universidad de San Buenaventura?</span>
-            </label>
-            <label className="registro-usuario__consentimiento-linea">
-              <input type="checkbox" {...register('isActiveStudent')} />
-              <span>¿Es usted estudiante activo de algún programa de la Universidad de San Buenaventura?</span>
-            </label>
             <label className="registro-usuario__consentimiento-destacado">
-              <input type="checkbox" {...register('dataConsent')} />
+              <input type="checkbox" {...register('personalDataConsentAccepted')} />
               <span>{LEGAL_COPY.dataPolicy}</span>
             </label>
-            {errors.dataConsent ? <small className="form-field__error">{errors.dataConsent.message}</small> : null}
+            {errors.personalDataConsentAccepted ? (
+              <small className="form-field__error">{errors.personalDataConsentAccepted.message}</small>
+            ) : null}
+
+            <label className="registro-usuario__consentimiento-destacado">
+              <input type="checkbox" {...register('privacyPolicyAccepted')} />
+              <span>
+                Acepto las{' '}
+                <a href={LEGAL_LINKS.privacyPolicy} target="_blank" rel="noopener noreferrer">
+                  Políticas de uso y privacidad
+                </a>
+                .
+              </span>
+            </label>
+            {errors.privacyPolicyAccepted ? (
+              <small className="form-field__error">{errors.privacyPolicyAccepted.message}</small>
+            ) : null}
+
             <label className="registro-usuario__consentimiento-destacado">
               <input type="checkbox" {...register('termsAccepted')} />
-              <span>Declaro haber leído y aceptado las Políticas de Tratamiento de Datos Personales, así como los Términos y Condiciones de la institución.</span>
+              <span>
+                Acepto los{' '}
+                <a href={LEGAL_LINKS.terms} target="_blank" rel="noopener noreferrer">
+                  Términos y Condiciones
+                </a>
+                .
+              </span>
             </label>
-            {errors.termsAccepted ? <small className="form-field__error">{errors.termsAccepted.message}</small> : null}
+            {errors.termsAccepted ? (
+              <small className="form-field__error">{errors.termsAccepted.message}</small>
+            ) : null}
           </div>
 
           {errorMessage ? <div className="autenticacion-mensaje">{errorMessage}</div> : null}
@@ -284,7 +596,7 @@ export function RegisterPage() {
       <InstitutionalModal open={adultModalOpen} onClose={() => setAdultModalOpen(false)}>
         <p>
           Esta aplicación está dirigida para mayores de 18 años. Al aceptar, confirmas que cuentas
-          con mayorí­a de edad para continuar con el proceso.
+          con mayoría de edad para continuar con el proceso.
         </p>
         <label className="autenticacion-seleccion autenticacion-seleccion--centrada">
           <input

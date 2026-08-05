@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { mockResult, storageKeys, defaultMockUsers } from '../../mocks/data'
+import { mockResult } from '../../mocks/data'
 import { adminService } from '../../services/adminService'
+import { getUsers } from '../../services/authStorage'
 import { useAuthStore } from '../../stores/authStore'
 import type { AdminDashboard, AdminResultRecord, RegisteredUserRecord } from '../../types'
-import { readStorage } from '../../utils/storage'
 
 type AdminView = 'overview' | 'users' | 'results' | 'reports' | 'settings'
 
@@ -33,9 +33,7 @@ export function AdminDashboardPage() {
   const [rows, setRows] = useState<AdminResultRecord[]>([])
   const [activeView, setActiveView] = useState<AdminView>('overview')
   const [exportStatus, setExportStatus] = useState('')
-  const [users, setUsers] = useState<RegisteredUserRecord[]>(() =>
-    readStorage<RegisteredUserRecord[]>(storageKeys.users, defaultMockUsers),
-  )
+  const [users, setUsers] = useState<RegisteredUserRecord[]>(() => getUsers())
 
   useEffect(() => {
     void Promise.all([adminService.getDashboard(), adminService.getResults()]).then(
@@ -230,8 +228,9 @@ export function AdminDashboardPage() {
                         <strong>{user.fullName}</strong>
                         <span>{user.email}</span>
                         <p>
-                          Documento: {user.document} | Ciudad: {user.city}
+                          Documento: {user.document} | Ciudad: {user.municipalityName}
                         </p>
+                        <p>Usuario: {user.username ?? 'Sin username legacy'}</p>
                       </div>
                       <div className="usuarios-administracion__controles">
                         <label>

@@ -6,6 +6,8 @@ export type GenderOption =
   | 'Prefiero no decirlo'
   | 'Otro'
 
+export type InstitutionRelationship = 'Inscrito' | 'Estudiante'
+
 export type VocationalArea =
   | 'Ingeniería y tecnología'
   | 'Salud y bienestar'
@@ -21,8 +23,42 @@ export interface ApiEnvelope<T> {
   requestedAt: string
 }
 
+export interface SelectOption<T extends string = string> {
+  value: T
+  label: string
+}
+
+export interface AcademicProgram {
+  id: string
+  code: string
+  name: string
+  areaId: string
+  areaName: string
+  active: boolean
+}
+
+export interface AcademicProgramGroup {
+  id: string
+  label: string
+  programs: AcademicProgram[]
+}
+
+export interface DepartmentCatalogItem {
+  id: string
+  code: string
+  name: string
+  municipalities: MunicipalityCatalogItem[]
+}
+
+export interface MunicipalityCatalogItem {
+  id: string
+  code: string
+  name: string
+  type: string
+}
+
 export interface LoginPayload {
-  email: string
+  identifier: string
   password: string
   rememberMe: boolean
 }
@@ -35,18 +71,25 @@ export interface RecoverPasswordPayload {
 export interface RegisterPayload {
   firstName: string
   lastName: string
+  username: string
   document: string
-  age: number
+  birthDate: string
   email: string
   phone: string
-  department: string
-  city: string
+  departmentId: string
+  municipalityId: string
   gender: GenderOption
   genderOther?: string
-  belongsToUniversity: boolean
-  currentCareer?: string
-  currentSemester?: string
-  dataConsent: boolean
+  institutionLinked: boolean
+  institutionRelationship?: InstitutionRelationship
+  academicProgramId?: string
+  semester?: string
+  personalDataConsentAccepted: boolean
+  privacyPolicyAccepted: boolean
+  termsAccepted: boolean
+  personalDataConsentVersion: string
+  privacyPolicyVersion: string
+  termsVersion: string
   password: string
 }
 
@@ -56,22 +99,38 @@ export interface UserProfile {
   fullName: string
   firstName: string
   lastName: string
+  username?: string
   document: string
+  birthDate?: string
   age: number
   email: string
   phone: string
-  department: string
-  city: string
+  departmentId: string
+  departmentName: string
+  municipalityId: string
+  municipalityName: string
   gender: GenderOption
   genderOther?: string
-  belongsToUniversity: boolean
-  currentCareer?: string
-  currentSemester?: string
-  dataConsent: boolean
+  institutionLinked: boolean
+  institutionRelationship?: InstitutionRelationship
+  academicProgramId?: string
+  academicProgramName?: string
+  semester?: string
+  personalDataConsentAccepted: boolean
+  personalDataConsentAcceptedAt?: string
+  personalDataConsentVersion?: string
+  privacyPolicyAccepted: boolean
+  privacyPolicyAcceptedAt?: string
+  privacyPolicyVersion?: string
+  termsAccepted: boolean
+  termsAcceptedAt?: string
+  termsVersion?: string
   createdAt: string
 }
 
 export interface RegisteredUserRecord extends UserProfile {
+  normalizedEmail: string
+  normalizedUsername?: string
   passwordMock: string
 }
 
