@@ -48,7 +48,7 @@ export function ResultsPage() {
             <div className="perfil-vocacional__figura" />
           </div>
           <div className="perfil-vocacional__contenido">
-            <h2>IngenierÃ­as y TecnologÃ­a</h2>
+            <h2>Ingenierías y Tecnología</h2>
             <p>{data.qualitativeSummary}</p>
           </div>
           <div className="perfil-vocacional__usuario">
@@ -76,7 +76,7 @@ export function ResultsPage() {
                   <div className="resultado-vocacional__avatar" aria-hidden="true">
                     USB
                   </div>
-                  <button type="button">Conocer mÃ¡s</button>
+                  <button type="button">Conocer más</button>
                 </div>
               </article>
             ))}
@@ -86,9 +86,9 @@ export function ResultsPage() {
         <section className="resumen-resultado">
           <h3>Resumen de tu perfil</h3>
           <p>
-            Tus resultados indican una fuerte inclinaciÃ³n hacia el Ã¡rea de{' '}
+            Tus resultados indican una fuerte inclinación hacia el área de{' '}
             <span>{data.primaryArea}</span> con un <span>{topCareer.affinity}%</span> de afinidad.
-            Esto sugiere que posees habilidades y preferencias alineadas con carreras en esta Ã¡rea.
+            Esto sugiere que posees habilidades y preferencias alineadas con carreras en esta área.
           </p>
           <p className="resumen-resultado__meta">
             Informe generado el {formatDate(data.generatedAt)} con recomendaciones iniciales.
@@ -100,7 +100,7 @@ export function ResultsPage() {
             onClick={handleDownload}
           >
             <span>Descargar PDF</span>
-            <span aria-hidden="true">â†“</span>
+            <span aria-hidden="true">↓</span>
           </button>
         </section>
       </section>
