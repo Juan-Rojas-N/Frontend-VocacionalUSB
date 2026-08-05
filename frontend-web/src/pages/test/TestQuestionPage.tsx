@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { InstitutionalModal } from '../../components/common/InstitutionalModal'
+import { TestExitGuard } from '../../components/test/TestExitGuard'
 import { APP_ROUTES } from '../../constants'
 import { useCountdown } from '../../hooks/useCountdown'
 import { testService } from '../../services/testService'
@@ -27,10 +28,12 @@ export function TestQuestionPage() {
     audienceLabel,
     setCurrentIndex,
     answerQuestion,
+    introAcknowledged,
+    acknowledgeIntro,
     clear,
   } = useTestSessionStore()
 
-  const [introOpen, setIntroOpen] = useState(true)
+  const [introOpen, setIntroOpen] = useState(!introAcknowledged)
   const [resultsOpen, setResultsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -49,6 +52,11 @@ export function TestQuestionPage() {
     return Math.round(((currentIndex + 1) / questions.length) * 100)
   }, [currentIndex, questions.length])
 
+  const answeredCount = useMemo(
+    () => questions.filter((question) => answers[question.id]).length,
+    [answers, questions],
+  )
+
   const elapsedSeconds = useMemo(() => {
     if (!startedAt || !expiresAt) {
       return 0
@@ -64,18 +72,13 @@ export function TestQuestionPage() {
     }
   }, [isSubmitting, navigate, questions.length])
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [])
-
   if (!currentQuestion) {
     return null
+  }
+
+  function closeIntro() {
+    acknowledgeIntro()
+    setIntroOpen(false)
   }
 
   async function handleFinish() {
@@ -102,7 +105,7 @@ export function TestQuestionPage() {
 
   function handleAdvance() {
     if (currentIndex === questions.length - 1) {
-      setResultsOpen(true)
+      navigate(APP_ROUTES.testReview)
       return
     }
 
@@ -111,6 +114,7 @@ export function TestQuestionPage() {
 
   return (
     <>
+      <TestExitGuard />
       <div className="sesion-prueba">
         <section className="sesion-prueba__panel">
           <div className="sesion-prueba__encabezado">
@@ -121,7 +125,7 @@ export function TestQuestionPage() {
               </span>
             </div>
             <div className="sesion-prueba__badges">
-              <span className="sesion-prueba__badge">{versionLabel ?? 'VersiÃ³n v1.1'}</span>
+              <span className="sesion-prueba__badge">{versionLabel ?? 'Versión v1.1'}</span>
               <span className="sesion-prueba__badge">{attemptLabel ?? 'Intento #00011'}</span>
             </div>
           </div>
@@ -133,7 +137,7 @@ export function TestQuestionPage() {
             </div>
             <div className="progreso-prueba__bloque progreso-prueba__bloque--alineado">
               <strong>Continuidad</strong>
-              <p>Si sales, deberÃ¡s iniciar nuevamente</p>
+              <p>Si sales, deberás iniciar nuevamente</p>
             </div>
           </div>
 
@@ -189,28 +193,43 @@ export function TestQuestionPage() {
             </div>
           </section>
 
-          <div className="navegacion-preguntas">
-            {questions.map((question, index) => (
-              <button
-                key={question.id}
-                type="button"
-                className={[
-                  'navegacion-preguntas__item',
-                  index === currentIndex ? 'navegacion-preguntas__item--activo' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                onClick={() => setCurrentIndex(index)}
-              >
-                {index + 1}
-              </button>
-            ))}
+          <div className="navegacion-preguntas" aria-label="Navegacion de preguntas">
+            <div className="navegacion-preguntas__estado">
+              <strong>{answeredCount}</strong>
+              <span>de {questions.length} respondidas</span>
+            </div>
+            <div className="navegacion-preguntas__lista">
+              {questions.map((question, index) => {
+                const isAnswered = Boolean(answers[question.id])
+
+                return (
+                  <button
+                    key={question.id}
+                    type="button"
+                    className={[
+                      'navegacion-preguntas__item',
+                      index === currentIndex ? 'navegacion-preguntas__item--activo' : '',
+                      isAnswered ? 'navegacion-preguntas__item--respondida' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onClick={() => setCurrentIndex(index)}
+                    aria-label={`Pregunta ${index + 1}: ${isAnswered ? 'respondida' : 'pendiente'}`}
+                    title={isAnswered ? 'Respondida' : 'Pendiente'}
+                  >
+                    <span>{index + 1}</span>
+                  </button>
+                )
+              })}
+            </div>
             <button
               type="button"
-              className="navegacion-preguntas__item"
-              onClick={() => setResultsOpen(true)}
+              className="navegacion-preguntas__item navegacion-preguntas__item--revision"
+              onClick={() => navigate(APP_ROUTES.testReview)}
+              aria-label="Revisar respuestas"
+              title="Revisar respuestas"
             >
-              X
+              <span>R</span>
             </button>
           </div>
         </section>
@@ -218,17 +237,17 @@ export function TestQuestionPage() {
 
       <InstitutionalModal
         open={introOpen}
-        onClose={() => setIntroOpen(false)}
+        onClose={closeIntro}
         title="Antes de iniciar la prueba"
       >
         <p>
-          Lee con atenciÃ³n cada pregunta y responde con sinceridad. No hay respuestas correctas o
+          Lee con atención cada pregunta y responde con sinceridad. No hay respuestas correctas o
           incorrectas: el objetivo es identificar tus afinidades de manera clara.
         </p>
         <button
           type="button"
           className="boton-principal boton-principal--pequeno"
-          onClick={() => setIntroOpen(false)}
+          onClick={closeIntro}
         >
           Comenzar
         </button>
@@ -241,11 +260,11 @@ export function TestQuestionPage() {
             setResultsOpen(false)
           }
         }}
-        title="Tus resultados estÃ¡n listos"
+        title="Tus resultados están listos"
         theme="dark"
       >
         <p>
-          Al continuar verÃ¡s un resumen vocacional con Ã¡reas destacadas, carreras recomendadas y una
+          Al continuar verás un resumen vocacional con áreas destacadas, carreras recomendadas y una
           descarga simulada del informe institucional.
         </p>
         {errorMessage ? <p className="form-field__error">{errorMessage}</p> : null}

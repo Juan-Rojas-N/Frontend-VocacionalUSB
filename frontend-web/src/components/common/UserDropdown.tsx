@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { APP_ROUTES } from '../../constants'
 import { useAuthStore } from '../../stores/authStore'
+import { useTestSessionStore } from '../../stores/testSessionStore'
 
 interface UserDropdownProps {
   open: boolean
@@ -10,6 +11,9 @@ interface UserDropdownProps {
 export function UserDropdown({ open, onClose }: UserDropdownProps) {
   const sessionUser = useAuthStore((state) => state.sessionUser)
   const signOut = useAuthStore((state) => state.signOut)
+  const activeAttemptId = useTestSessionStore((state) => state.attemptId)
+  const testQuestionCount = useTestSessionStore((state) => state.questions.length)
+  const clearTestSession = useTestSessionStore((state) => state.clear)
 
   if (!open || !sessionUser) {
     return null
@@ -40,6 +44,15 @@ export function UserDropdown({ open, onClose }: UserDropdownProps) {
         type="button"
         className="user-dropdown__item user-dropdown__item--button"
         onClick={() => {
+          if (
+            activeAttemptId &&
+            testQuestionCount > 0 &&
+            !window.confirm('Si cierras sesion, deberas iniciar nuevamente la prueba. ¿Deseas salir?')
+          ) {
+            return
+          }
+
+          clearTestSession()
           signOut()
           onClose()
         }}

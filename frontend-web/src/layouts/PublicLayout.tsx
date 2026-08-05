@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { UserDropdown } from '../components/common/UserDropdown'
-import { APP_ROUTES } from '../constants'
+import { APP_ROUTES, LEGAL_LINKS } from '../constants'
 import { useAuthStore } from '../stores/authStore'
+import { useTestSessionStore } from '../stores/testSessionStore'
 
 export function PublicLayout() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
+  const activeAttemptId = useTestSessionStore((state) => state.attemptId)
+  const testQuestionCount = useTestSessionStore((state) => state.questions.length)
   const [menuOpen, setMenuOpen] = useState(false)
+  const isTestInProgress = Boolean(activeAttemptId && testQuestionCount > 0)
 
   return (
     <div className="app-shell">
@@ -20,10 +24,12 @@ export function PublicLayout() {
             />
           </Link>
           <div className="public-topbar__actions">
-            <Link to={APP_ROUTES.testIntro} className="help-pill">
-              <img src="/brand/question-icon.svg" alt="" aria-hidden="true" />
-              <span>¿Cómo responder?</span>
-            </Link>
+            {!isTestInProgress ? (
+              <Link to={APP_ROUTES.testIntro} className="help-pill">
+                <img src="/brand/question-icon.svg" alt="" aria-hidden="true" />
+                <span>Guía</span>
+              </Link>
+            ) : null}
             {sessionUser ? (
               <div className="user-menu-wrapper">
                 <button
@@ -59,12 +65,35 @@ export function PublicLayout() {
               de educación superior
             </p>
             <p>
-              “con personería jurídica reconocida por el Ministerio de Educación en Resolución 1326
-              del 25 de marzo de 1975”
+              <a
+                className="public-footer__link"
+                href={LEGAL_LINKS.legalPersonhood}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                con personería jurídica reconocida por el Ministerio de Educación en Resolución
+                1326 del 25 de marzo de 1975
+              </a>
             </p>
             <p>
-              Copyright © 2026 Universidad de San Buenaventura, Sede Bogotá | Políticas de uso y
-              privacidad | Términos y Condiciones
+              Copyright © 2026 Universidad de San Buenaventura, Sede Bogotá |{' '}
+              <a
+                className="public-footer__link"
+                href={LEGAL_LINKS.privacyPolicy}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Políticas de uso y privacidad
+              </a>{' '}
+              |{' '}
+              <a
+                className="public-footer__link"
+                href={LEGAL_LINKS.terms}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Términos y Condiciones
+              </a>
             </p>
             <p>
               Institución de educación superior sujeta a la inspección y vigilancia del Ministerio

@@ -12,6 +12,7 @@ interface TestSessionState {
   questions: TestQuestion[]
   answers: Record<string, number>
   currentIndex: number
+  introAcknowledged: boolean
   initialize: (payload: {
     attemptId: string
     startedAt: string
@@ -23,6 +24,7 @@ interface TestSessionState {
   }) => void
   answerQuestion: (questionId: string, value: number) => void
   setCurrentIndex: (value: number) => void
+  acknowledgeIntro: () => void
   clear: () => void
 }
 
@@ -38,6 +40,7 @@ export const useTestSessionStore = create<TestSessionState>()(
       questions: [],
       answers: {},
       currentIndex: 0,
+      introAcknowledged: false,
       initialize(payload) {
         set({
           attemptId: payload.attemptId,
@@ -49,6 +52,7 @@ export const useTestSessionStore = create<TestSessionState>()(
           questions: payload.questions,
           answers: {},
           currentIndex: 0,
+          introAcknowledged: false,
         })
       },
       answerQuestion(questionId, value) {
@@ -62,6 +66,9 @@ export const useTestSessionStore = create<TestSessionState>()(
       setCurrentIndex(value) {
         set({ currentIndex: value })
       },
+      acknowledgeIntro() {
+        set({ introAcknowledged: true })
+      },
       clear() {
         set({
           attemptId: null,
@@ -73,6 +80,7 @@ export const useTestSessionStore = create<TestSessionState>()(
           questions: [],
           answers: {},
           currentIndex: 0,
+          introAcknowledged: false,
         })
       },
     }),
