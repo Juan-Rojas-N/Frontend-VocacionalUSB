@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/authStore'
 import { useTestSessionStore } from '../stores/testSessionStore'
 
 export function PublicLayout() {
+  const publicBasePath = import.meta.env.BASE_URL
   const sessionUser = useAuthStore((state) => state.sessionUser)
   const activeAttemptId = useTestSessionStore((state) => state.attemptId)
   const testQuestionCount = useTestSessionStore((state) => state.questions.length)
@@ -18,7 +19,7 @@ export function PublicLayout() {
         <div className="public-topbar__inner">
           <Link to={APP_ROUTES.home} className="public-brand" aria-label="Ir al inicio de USB Vocacional">
             <img
-              src="/brand/usb-header-logo.png"
+              src={`${publicBasePath}brand/usb-header-logo.png`}
               alt="Universidad de San Buenaventura"
               className="public-brand__image"
             />
@@ -26,7 +27,7 @@ export function PublicLayout() {
           <div className="public-topbar__actions">
             {!isTestInProgress ? (
               <Link to={APP_ROUTES.testIntro} className="help-pill">
-                <img src="/brand/question-icon.svg" alt="" aria-hidden="true" />
+                <img src={`${publicBasePath}brand/question-icon.svg`} alt="" aria-hidden="true" />
                 <span>Guía</span>
               </Link>
             ) : null}
@@ -55,7 +56,7 @@ export function PublicLayout() {
       <footer className="public-footer">
         <div className="public-footer__inner">
           <img
-            src="/brand/usb-footer-brand.png"
+            src={`${publicBasePath}brand/usb-footer-brand.png`}
             alt="Universidad de San Buenaventura Bogotá"
             className="public-footer__brand"
           />

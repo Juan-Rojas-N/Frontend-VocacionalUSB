@@ -4,25 +4,25 @@ const cards = [
   {
     id: 1,
     title: 'Registro',
-    image: '/guide/imag-tarjeta-1.png',
+    image: 'guide/imag-tarjeta-1.png',
     text: 'Crea tu cuenta proporcionando información básica para personalizar tu experiencia.',
   },
   {
     id: 2,
     title: 'Prueba vocacional',
-    image: '/guide/imag-tarjeta-2.png',
+    image: 'guide/imag-tarjeta-2.png',
     text: 'Responderás preguntas diseñadas para evaluar intereses, habilidades y preferencias.',
   },
   {
     id: 3,
     title: 'Recomendaciones',
-    image: '/guide/imag-tarjeta-3.png',
+    image: 'guide/imag-tarjeta-3.png',
     text: 'Contesta con sinceridad, sin estímulos externos y con la calma suficiente para decidir bien.',
   },
   {
     id: 4,
     title: 'Resultados',
-    image: '/guide/imag-tarjeta-4.png',
+    image: 'guide/imag-tarjeta-4.png',
     text: 'Obtén un análisis inicial y programas sugeridos de acuerdo con tus respuestas.',
   },
 ]
@@ -30,6 +30,7 @@ const cards = [
 export function GuideCardCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const card = cards[currentIndex]
+  const publicBasePath = import.meta.env.BASE_URL
 
   function move(step: number) {
     setCurrentIndex((value) => (value + step + cards.length) % cards.length)
@@ -46,7 +47,12 @@ export function GuideCardCarousel() {
           </div>
         </div>
         <div className="guide-carousel__image-shell">
-          <img src={card.image} alt="" aria-hidden="true" className="guide-carousel__image guide-carousel__image--icon" />
+          <img
+            src={`${publicBasePath}${card.image}`}
+            alt=""
+            aria-hidden="true"
+            className="guide-carousel__image guide-carousel__image--icon"
+          />
         </div>
         <p>{card.text}</p>
         <div className="guide-carousel__footer">

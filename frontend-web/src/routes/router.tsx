@@ -47,49 +47,52 @@ function withSuspense(component: ReactNode) {
   )
 }
 
-export const router = createBrowserRouter([
-  {
-    path: APP_ROUTES.home,
-    element: <PublicLayout />,
-    children: [
-      { index: true, element: withSuspense(<LandingPage />) },
-      { path: APP_ROUTES.login, element: withSuspense(<LoginPage />) },
-      { path: APP_ROUTES.register, element: withSuspense(<RegisterPage />) },
-      { path: APP_ROUTES.recoverPassword, element: withSuspense(<ForgotPasswordPage />) },
-      { path: '/auth/login', element: <Navigate to={APP_ROUTES.login} replace /> },
-      { path: '/auth/register', element: <Navigate to={APP_ROUTES.register} replace /> },
-      {
-        path: '/auth/recover-password',
-        element: <Navigate to={APP_ROUTES.recoverPassword} replace />,
-      },
-      { path: '/prueba', element: <Navigate to={APP_ROUTES.testIntro} replace /> },
-      {
-        path: '/prueba/sesion',
-        element: <Navigate to={APP_ROUTES.testSession} replace />,
-      },
-      {
-        path: '/prueba/revision',
-        element: <Navigate to={APP_ROUTES.testReview} replace />,
-      },
-      { path: '/results', element: <Navigate to={APP_ROUTES.results} replace /> },
-      { path: '/admin', element: <Navigate to={APP_ROUTES.admin} replace /> },
-      { path: '/test', element: <Navigate to={APP_ROUTES.testIntro} replace /> },
-      { path: '/test/session', element: <Navigate to={APP_ROUTES.testSession} replace /> },
-      {
-        element: <RouteGuard allowedRoles={['student', 'admin']} />,
-        children: [
-          { path: APP_ROUTES.profile, element: withSuspense(<ProfilePage />) },
-          { path: APP_ROUTES.testIntro, element: withSuspense(<TestIntroPage />) },
-          { path: APP_ROUTES.testSession, element: withSuspense(<TestQuestionPage />) },
-          { path: APP_ROUTES.testReview, element: withSuspense(<TestReviewPage />) },
-          { path: APP_ROUTES.results, element: withSuspense(<ResultsPage />) },
-        ],
-      },
-      {
-        element: <RouteGuard allowedRoles={['admin']} />,
-        children: [{ path: APP_ROUTES.admin, element: withSuspense(<AdminDashboardPage />) }],
-      },
-      { path: '*', element: withSuspense(<NotFoundPage />) },
-    ],
-  },
-])
+export const router = createBrowserRouter(
+  [
+    {
+      path: APP_ROUTES.home,
+      element: <PublicLayout />,
+      children: [
+        { index: true, element: withSuspense(<LandingPage />) },
+        { path: APP_ROUTES.login, element: withSuspense(<LoginPage />) },
+        { path: APP_ROUTES.register, element: withSuspense(<RegisterPage />) },
+        { path: APP_ROUTES.recoverPassword, element: withSuspense(<ForgotPasswordPage />) },
+        { path: '/auth/login', element: <Navigate to={APP_ROUTES.login} replace /> },
+        { path: '/auth/register', element: <Navigate to={APP_ROUTES.register} replace /> },
+        {
+          path: '/auth/recover-password',
+          element: <Navigate to={APP_ROUTES.recoverPassword} replace />,
+        },
+        { path: '/prueba', element: <Navigate to={APP_ROUTES.testIntro} replace /> },
+        {
+          path: '/prueba/sesion',
+          element: <Navigate to={APP_ROUTES.testSession} replace />,
+        },
+        {
+          path: '/prueba/revision',
+          element: <Navigate to={APP_ROUTES.testReview} replace />,
+        },
+        { path: '/results', element: <Navigate to={APP_ROUTES.results} replace /> },
+        { path: '/admin', element: <Navigate to={APP_ROUTES.admin} replace /> },
+        { path: '/test', element: <Navigate to={APP_ROUTES.testIntro} replace /> },
+        { path: '/test/session', element: <Navigate to={APP_ROUTES.testSession} replace /> },
+        {
+          element: <RouteGuard allowedRoles={['student', 'admin']} />,
+          children: [
+            { path: APP_ROUTES.profile, element: withSuspense(<ProfilePage />) },
+            { path: APP_ROUTES.testIntro, element: withSuspense(<TestIntroPage />) },
+            { path: APP_ROUTES.testSession, element: withSuspense(<TestQuestionPage />) },
+            { path: APP_ROUTES.testReview, element: withSuspense(<TestReviewPage />) },
+            { path: APP_ROUTES.results, element: withSuspense(<ResultsPage />) },
+          ],
+        },
+        {
+          element: <RouteGuard allowedRoles={['admin']} />,
+          children: [{ path: APP_ROUTES.admin, element: withSuspense(<AdminDashboardPage />) }],
+        },
+        { path: '*', element: withSuspense(<NotFoundPage />) },
+      ],
+    },
+  ],
+  { basename: '/vocacional' },
+)
