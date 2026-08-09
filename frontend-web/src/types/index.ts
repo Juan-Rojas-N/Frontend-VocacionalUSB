@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin'
+export type UserRole = 'student' | 'administrator' | 'root'
 
 export type GenderOption =
   | 'Masculino'
@@ -66,6 +66,16 @@ export interface LoginPayload {
 export interface RecoverPasswordPayload {
   email: string
   document?: string
+}
+
+export interface UpdateUserProfilePayload {
+  firstName: string
+  lastName: string
+  username: string
+  email: string
+  phone: string
+  departmentId: string
+  municipalityId: string
 }
 
 export interface RegisterPayload {
@@ -201,14 +211,77 @@ export interface RadarDatum {
   fullMark: number
 }
 
+export interface AreaAffinityProfile {
+  id: string
+  name: VocationalArea
+  affinity: number
+  description: string
+  profile: string
+}
+
 export interface VocationalResult {
   id: string
   generatedAt: string
   primaryArea: VocationalArea
   qualitativeSummary: string
   careers: CareerRecommendation[]
+  areas: AreaAffinityProfile[]
   affinityByArea: ChartDatum[]
   radarProfile: RadarDatum[]
+}
+
+export interface RoleActivity {
+  id: string
+  name: string
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  path: string
+  enabled: boolean
+}
+
+export interface RoleActivityAssignment {
+  role: UserRole
+  roleLabel: string
+  activities: RoleActivity[]
+}
+
+export interface AdminAreaCatalogItem {
+  id: string
+  name: string
+  description: string
+  profile: string
+  active: boolean
+}
+
+export interface AdminProgramCatalogItem {
+  id: string
+  name: string
+  description: string
+  areaId: string
+  url?: string
+  active: boolean
+}
+
+export interface AdminTestCatalogItem {
+  id: string
+  name: string
+  version: string
+  questionCount: number
+  durationMinutes: number
+  active: boolean
+}
+
+export interface AdminCatalogs {
+  areas: AdminAreaCatalogItem[]
+  programs: AdminProgramCatalogItem[]
+  tests: AdminTestCatalogItem[]
+}
+
+export interface AdminReportFilters {
+  userId?: string
+  departmentId?: string
+  programId?: string
+  startDate?: string
+  endDate?: string
 }
 
 export interface DashboardMetric {

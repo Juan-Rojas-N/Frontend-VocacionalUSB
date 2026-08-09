@@ -8,6 +8,7 @@ interface AuthState {
   accessToken: string | null
   signIn: (payload: LoginPayload) => Promise<UserProfile>
   register: (payload: RegisterPayload) => Promise<UserProfile>
+  updateSessionUser: (profile: UserProfile) => void
   signOut: () => void
 }
 
@@ -32,12 +33,37 @@ export const useAuthStore = create<AuthState>()(
         })
         return response.data
       },
+      updateSessionUser(profile) {
+        set({ sessionUser: profile })
+      },
       signOut() {
         set({ sessionUser: null, accessToken: null })
       },
     }),
     {
       name: 'usb-vocacional-auth',
+      version: 1,
+      migrate: (persistedState) => {
+        const state = persistedState as
+          | { sessionUser?: UserProfile | null; accessToken?: string | null }
+          | undefined
+        const role = state?.sessionUser?.role as string | undefined
+
+        if (state?.sessionUser && role === 'admin') {
+          return {
+            sessionUser: {
+              ...state.sessionUser,
+              role: 'administrator' as const,
+            },
+            accessToken: state.accessToken ?? null,
+          }
+        }
+
+        return {
+          sessionUser: state?.sessionUser ?? null,
+          accessToken: state?.accessToken ?? null,
+        }
+      },
       partialize: (state) => ({
         sessionUser: state.sessionUser,
         accessToken: state.accessToken,

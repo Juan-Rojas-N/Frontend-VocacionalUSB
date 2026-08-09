@@ -77,7 +77,7 @@ export const router = createBrowserRouter(
         { path: '/test', element: <Navigate to={APP_ROUTES.testIntro} replace /> },
         { path: '/test/session', element: <Navigate to={APP_ROUTES.testSession} replace /> },
         {
-          element: <RouteGuard allowedRoles={['student', 'admin']} />,
+          element: <RouteGuard allowedRoles={['student', 'administrator', 'root']} />,
           children: [
             { path: APP_ROUTES.profile, element: withSuspense(<ProfilePage />) },
             { path: APP_ROUTES.testIntro, element: withSuspense(<TestIntroPage />) },
@@ -87,7 +87,7 @@ export const router = createBrowserRouter(
           ],
         },
         {
-          element: <RouteGuard allowedRoles={['admin']} />,
+          element: <RouteGuard allowedRoles={['administrator', 'root']} />,
           children: [{ path: APP_ROUTES.admin, element: withSuspense(<AdminDashboardPage />) }],
         },
         { path: '*', element: withSuspense(<NotFoundPage />) },

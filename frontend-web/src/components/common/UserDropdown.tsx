@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { APP_ROUTES } from '../../constants'
 import { useAuthStore } from '../../stores/authStore'
 import { useTestSessionStore } from '../../stores/testSessionStore'
+import { hasAdministrativeAccess } from '../../utils/roles'
 
 interface UserDropdownProps {
   open: boolean
@@ -35,7 +36,7 @@ export function UserDropdown({ open, onClose }: UserDropdownProps) {
       <Link to={APP_ROUTES.profile} className="user-dropdown__item" onClick={onClose}>
         Perfil
       </Link>
-      {sessionUser.role === 'admin' ? (
+      {hasAdministrativeAccess(sessionUser.role) ? (
         <Link to={APP_ROUTES.admin} className="user-dropdown__item" onClick={onClose}>
           Administración
         </Link>

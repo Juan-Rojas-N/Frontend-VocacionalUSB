@@ -1,13 +1,18 @@
 import { MOCK_CREDENTIALS, TEST_SCALE } from '../constants'
 import type {
+  AdminCatalogs,
   AdminDashboard,
   RegisteredUserRecord,
+  RoleActivity,
+  RoleActivityAssignment,
   TestQuestion,
   VocationalResult,
 } from '../types'
 
 export const storageKeys = {
   users: 'usb-vocacional-users',
+  roleActivities: 'usb-vocacional-role-activities-mock',
+  adminCatalogs: 'usb-vocacional-admin-catalogs-mock',
 }
 
 export const defaultMockUsers: RegisteredUserRecord[] = [
@@ -44,7 +49,7 @@ export const defaultMockUsers: RegisteredUserRecord[] = [
   },
   {
     id: 'usr-admin-1',
-    role: 'admin',
+    role: 'administrator',
     fullName: 'Coordinación USB',
     firstName: 'Coordinación',
     lastName: 'USB',
@@ -77,6 +82,38 @@ export const defaultMockUsers: RegisteredUserRecord[] = [
     normalizedEmail: MOCK_CREDENTIALS[1].email.toLowerCase(),
     normalizedUsername: 'coord.usb',
     passwordMock: MOCK_CREDENTIALS[1].password,
+  },
+  {
+    id: 'usr-root-1',
+    role: 'root',
+    fullName: 'Administración ROOT USB',
+    firstName: 'ROOT',
+    lastName: 'USB',
+    username: 'root.usb',
+    document: '900000001',
+    birthDate: '1990-01-01',
+    age: 36,
+    email: MOCK_CREDENTIALS[2].email,
+    phone: '6010000001',
+    departmentId: 'cundinamarca',
+    departmentName: 'Cundinamarca',
+    municipalityId: 'cundinamarca__bogota',
+    municipalityName: 'Bogotá',
+    gender: 'Prefiero no decirlo',
+    institutionLinked: true,
+    personalDataConsentAccepted: true,
+    personalDataConsentAcceptedAt: '2026-05-10T08:00:00.000Z',
+    personalDataConsentVersion: '2026-01',
+    privacyPolicyAccepted: true,
+    privacyPolicyAcceptedAt: '2026-05-10T08:00:00.000Z',
+    privacyPolicyVersion: '2026-01',
+    termsAccepted: true,
+    termsAcceptedAt: '2026-05-10T08:00:00.000Z',
+    termsVersion: '2026-01',
+    createdAt: '2026-05-10T08:00:00.000Z',
+    normalizedEmail: MOCK_CREDENTIALS[2].email.toLowerCase(),
+    normalizedUsername: 'root.usb',
+    passwordMock: MOCK_CREDENTIALS[2].password,
   },
 ]
 
@@ -204,6 +241,44 @@ export const mockResult: VocationalResult = {
       ],
     },
   ],
+  areas: [
+    {
+      id: 'engineering-technology',
+      name: 'Ingeniería y tecnología',
+      affinity: 84,
+      description:
+        'Área orientada al diseño y mejora de sistemas, procesos y soluciones tecnológicas para necesidades reales.',
+      profile:
+        'Pensamiento lógico, resolución de problemas, curiosidad técnica y disposición para diseñar sistemas.',
+    },
+    {
+      id: 'art-communication',
+      name: 'Arte y comunicación',
+      affinity: 63,
+      description:
+        'Área enfocada en comunicar ideas y emociones mediante lenguajes visuales, sonoros y narrativos.',
+      profile:
+        'Creatividad, sensibilidad estética, comunicación visual y apertura para explorar soluciones originales.',
+    },
+    {
+      id: 'social-sciences',
+      name: 'Ciencias sociales',
+      affinity: 58,
+      description:
+        'Área dedicada a comprender el comportamiento humano y aportar a procesos sociales y comunitarios.',
+      profile:
+        'Empatía, escucha, pensamiento crítico, argumentación e interés por comprender a las personas.',
+    },
+    {
+      id: 'health-wellbeing',
+      name: 'Salud y bienestar',
+      affinity: 45,
+      description:
+        'Área vinculada con el cuidado, la prevención y la recuperación de la salud de las personas.',
+      profile:
+        'Vocación de servicio, base científica, responsabilidad y equilibrio ante situaciones exigentes.',
+    },
+  ],
   affinityByArea: [
     { label: 'Ingeniería', value: 33 },
     { label: 'Arte', value: 21 },
@@ -290,6 +365,110 @@ export const mockAdminDashboard: AdminDashboard = {
       topCareer: 'Psicología',
       affinity: 89,
       completedAt: '2026-06-19T11:05:00.000Z',
+    },
+  ],
+}
+
+const baseMockActivities: RoleActivity[] = [
+  { id: 'activities-list', name: 'Listar actividades', method: 'GET', path: '/api/v1/actividades', enabled: false },
+  { id: 'roles-list', name: 'Listar roles', method: 'GET', path: '/api/v1/roles', enabled: false },
+  { id: 'roles-activities-list', name: 'Listar actividades por rol', method: 'GET', path: '/api/v1/roles/{id}/actividades', enabled: false },
+  { id: 'roles-activities-update', name: 'Actualizar actividades por rol', method: 'PUT', path: '/api/v1/roles/{id}/actividades', enabled: false },
+  { id: 'users-list', name: 'Listar usuarios', method: 'GET', path: '/api/v1/usuarios', enabled: false },
+  { id: 'users-role-update', name: 'Modificar rol de usuario', method: 'PATCH', path: '/api/v1/usuarios/{id}/rol', enabled: false },
+  { id: 'areas-write', name: 'Administrar áreas', method: 'PUT', path: '/api/v1/areas/{id}', enabled: false },
+  { id: 'programs-write', name: 'Administrar programas', method: 'PUT', path: '/api/v1/programas/{id}', enabled: false },
+  { id: 'results-read', name: 'Consultar resultados', method: 'GET', path: '/api/v1/pruebas/{id}/resultado', enabled: false },
+  { id: 'reports-export', name: 'Generar reportes', method: 'GET', path: '/api/v1/reportes', enabled: false },
+]
+
+function activitiesWithEnabledIds(enabledIds: string[]) {
+  const enabledSet = new Set(enabledIds)
+  return baseMockActivities.map((activity) => ({
+    ...activity,
+    enabled: enabledSet.has(activity.id),
+  }))
+}
+
+export const mockRoleActivityAssignments: RoleActivityAssignment[] = [
+  {
+    role: 'root',
+    roleLabel: 'ROOT',
+    activities: activitiesWithEnabledIds(baseMockActivities.map((activity) => activity.id)),
+  },
+  {
+    role: 'administrator',
+    roleLabel: 'ADMINISTRADOR',
+    activities: activitiesWithEnabledIds([
+      'areas-write',
+      'programs-write',
+      'results-read',
+      'reports-export',
+    ]),
+  },
+  {
+    role: 'student',
+    roleLabel: 'USUARIO',
+    activities: activitiesWithEnabledIds(['results-read']),
+  },
+]
+
+export const mockAdminCatalogs: AdminCatalogs = {
+  areas: [
+    {
+      id: 'engineering-technology',
+      name: 'Ingenierías y Tecnología',
+      description: 'Diseño y mejora de sistemas, procesos y soluciones tecnológicas.',
+      profile: 'Pensamiento lógico, resolución de problemas y diseño de sistemas.',
+      active: true,
+    },
+    {
+      id: 'social-human',
+      name: 'Ciencias Sociales y Humanas',
+      description: 'Comprensión del comportamiento humano y de problemáticas sociales.',
+      profile: 'Análisis crítico, empatía y comunicación verbal.',
+      active: true,
+    },
+    {
+      id: 'arts-creativity',
+      name: 'Artes y Creatividad',
+      description: 'Comunicación de ideas mediante lenguajes visuales y narrativos.',
+      profile: 'Creatividad, sensibilidad estética y comunicación visual.',
+      active: true,
+    },
+  ],
+  programs: [
+    {
+      id: 'systems-engineering',
+      name: 'Ingeniería de Sistemas',
+      description: 'Desarrollo de software, análisis de sistemas y tecnologías de la información.',
+      areaId: 'engineering-technology',
+      url: 'https://www.usbbog.edu.co/',
+      active: true,
+    },
+    {
+      id: 'psychology',
+      name: 'Psicología',
+      description: 'Estudio del comportamiento humano y de los procesos mentales.',
+      areaId: 'social-human',
+      active: true,
+    },
+    {
+      id: 'graphic-design',
+      name: 'Diseño Gráfico',
+      description: 'Comunicación visual y producción de contenidos.',
+      areaId: 'arts-creativity',
+      active: true,
+    },
+  ],
+  tests: [
+    {
+      id: 'vocational-screening-v1-1',
+      name: 'Tamizaje vocacional',
+      version: 'v1.1',
+      questionCount: 180,
+      durationMinutes: 40,
+      active: true,
     },
   ],
 }
