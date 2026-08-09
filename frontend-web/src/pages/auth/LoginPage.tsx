@@ -40,7 +40,10 @@ export function LoginPage() {
       setIsSubmitting(true)
       setErrorMessage('')
       const user = await signIn(values)
-      const fallbackRoute = user.role === 'admin' ? APP_ROUTES.admin : APP_ROUTES.testIntro
+      const fallbackRoute =
+        user.role === 'administrator' || user.role === 'root'
+          ? APP_ROUTES.admin
+          : APP_ROUTES.testIntro
       const nextRoute = location.state?.from ?? fallbackRoute
       navigate(nextRoute, { replace: true })
     } catch (error) {
@@ -70,10 +73,15 @@ export function LoginPage() {
                 className="autenticacion-control"
                 type="text"
                 placeholder="Ingresa tu correo o nombre de usuario"
+                autoComplete="username"
+                aria-invalid={Boolean(errors.identifier)}
+                aria-describedby={errors.identifier ? 'login-identifier-error' : undefined}
                 {...register('identifier')}
               />
               {errors.identifier ? (
-                <small className="form-field__error">{errors.identifier.message}</small>
+                <small id="login-identifier-error" className="form-field__error">
+                  {errors.identifier.message}
+                </small>
               ) : null}
             </div>
 
@@ -83,6 +91,7 @@ export function LoginPage() {
               placeholder="Ingresa tu contraseña"
               registration={register('password')}
               error={errors.password?.message}
+              autoComplete="current-password"
             />
 
             <div className="inicio-sesion__opciones inicio-sesion__opciones--principal">
@@ -93,7 +102,11 @@ export function LoginPage() {
               <Link to={APP_ROUTES.recoverPassword}>¿Olvidaste tu contraseña?</Link>
             </div>
 
-            {errorMessage ? <div className="autenticacion-mensaje">{errorMessage}</div> : null}
+            {errorMessage ? (
+              <div className="autenticacion-mensaje" role="alert">
+                {errorMessage}
+              </div>
+            ) : null}
 
             <button
               type="submit"

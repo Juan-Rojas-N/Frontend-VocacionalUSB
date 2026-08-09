@@ -1,0 +1,8 @@
+
+# Mis carpetas ignoradas
+Documentos/
+.agents/
+.specify/
+
+*.rar
+

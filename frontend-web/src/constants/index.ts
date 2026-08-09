@@ -387,5 +387,6 @@ export const MOCK_CREDENTIALS: Array<{
   password: string
 }> = [
   { role: 'student', email: 'laura.gomez@correo.com', password: 'Vocacion123' },
-  { role: 'admin', email: 'admin@usb.edu.co', password: 'Admin123' },
+  { role: 'administrator', email: 'admin@usb.edu.co', password: 'Admin123' },
+  { role: 'root', email: 'root@usb.edu.co', password: 'Root123' },
 ]

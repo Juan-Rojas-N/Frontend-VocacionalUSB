@@ -8,6 +8,7 @@ interface PasswordFieldProps {
   registration: UseFormRegisterReturn
   error?: string
   helpText?: string
+  autoComplete?: string
 }
 
 export function PasswordField({
@@ -17,6 +18,7 @@ export function PasswordField({
   registration,
   error,
   helpText,
+  autoComplete,
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false)
   const helpTextId = helpText ? `${id}-help` : undefined
@@ -35,6 +37,8 @@ export function PasswordField({
           id={id}
           type={visible ? 'text' : 'password'}
           placeholder={placeholder}
+          autoComplete={autoComplete}
+          aria-invalid={Boolean(error)}
           aria-describedby={[helpTextId, errorId].filter(Boolean).join(' ') || undefined}
           {...registration}
         />

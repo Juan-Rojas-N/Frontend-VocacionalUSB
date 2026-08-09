@@ -19,6 +19,18 @@ import {
   normalizeUsernameForComparison,
 } from '../utils/authValidation'
 
+function normalizeStoredRole(value: unknown) {
+  if (value === 'root') {
+    return 'root' as const
+  }
+
+  if (value === 'administrator' || value === 'admin') {
+    return 'administrator' as const
+  }
+
+  return 'student' as const
+}
+
 const VALID_GENDERS: GenderOption[] = [
   'Masculino',
   'Femenino',
@@ -152,7 +164,7 @@ function normalizeStoredUser(rawUser: Record<string, unknown>): RegisteredUserRe
 
   return {
     id: typeof rawUser.id === 'string' ? rawUser.id : `usr-${crypto.randomUUID()}`,
-    role: rawUser.role === 'admin' ? 'admin' : 'student',
+    role: normalizeStoredRole(rawUser.role),
     fullName:
       typeof rawUser.fullName === 'string' && rawUser.fullName.trim()
         ? rawUser.fullName.trim()
@@ -228,19 +240,47 @@ function normalizeStoredUser(rawUser: Record<string, unknown>): RegisteredUserRe
   }
 }
 
-export function getUsers() {
-  const storedUsers = readStorage<Record<string, unknown>[]>(storageKeys.users, [])
-  if (storedUsers.length === 0) {
-    const seededUsers = defaultMockUsers.map((user) =>
-      normalizeStoredUser(user as unknown as Record<string, unknown>),
-    )
-    writeStorage(storageKeys.users, seededUsers)
-    return seededUsers
+function findUserByMockIdentity(
+  users: RegisteredUserRecord[],
+  mockUser: RegisteredUserRecord,
+) {
+  return users.find(
+    (user) =>
+      user.id === mockUser.id ||
+      user.normalizedEmail === mockUser.normalizedEmail ||
+      (mockUser.normalizedUsername &&
+        user.normalizedUsername === mockUser.normalizedUsername),
+  )
+}
+
+function syncDefaultMockUsers(users: RegisteredUserRecord[]) {
+  const mergedUsers = [...users]
+
+  for (const mockUser of defaultMockUsers.map((user) =>
+    normalizeStoredUser(user as unknown as Record<string, unknown>),
+  )) {
+    const storedUser = findUserByMockIdentity(mergedUsers, mockUser)
+
+    if (!storedUser) {
+      mergedUsers.push(mockUser)
+      continue
+    }
+
+    storedUser.role = mockUser.role
+    storedUser.passwordMock = mockUser.passwordMock
+    storedUser.normalizedEmail = mockUser.normalizedEmail
+    storedUser.normalizedUsername = mockUser.normalizedUsername
   }
 
+  return mergedUsers
+}
+
+export function getUsers() {
+  const storedUsers = readStorage<Record<string, unknown>[]>(storageKeys.users, [])
   const normalizedUsers = storedUsers.map((user) => normalizeStoredUser(user))
-  writeStorage(storageKeys.users, normalizedUsers)
-  return normalizedUsers
+  const usersWithMockFixtures = syncDefaultMockUsers(normalizedUsers)
+  writeStorage(storageKeys.users, usersWithMockFixtures)
+  return usersWithMockFixtures
 }
 
 export function saveUsers(users: RegisteredUserRecord[]) {

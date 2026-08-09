@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { InstitutionalModal } from '../../components/common/InstitutionalModal'
 import { TestExitGuard } from '../../components/test/TestExitGuard'
 import { APP_ROUTES } from '../../constants'
 import { testService } from '../../services/testService'
@@ -18,8 +19,10 @@ export function TestReviewPage() {
     clear,
   } = useTestSessionStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const isFinishingRef = useRef(false)
+  const errorRef = useRef<HTMLParagraphElement>(null)
 
   const unanswered = useMemo(
     () => questions.filter((question) => !answers[question.id]),
@@ -45,6 +48,26 @@ export function TestReviewPage() {
     navigate(APP_ROUTES.testSession)
   }
 
+  function goToFirstPending() {
+    const firstPendingIndex = questions.findIndex((question) => !answers[question.id])
+    if (firstPendingIndex >= 0) {
+      editQuestion(firstPendingIndex)
+    }
+  }
+
+  function requestSubmission() {
+    if (unanswered.length > 0) {
+      setErrorMessage(
+        `Aún faltan ${unanswered.length} ${unanswered.length === 1 ? 'respuesta' : 'respuestas'}. Complétalas antes de enviar.`,
+      )
+      window.requestAnimationFrame(() => errorRef.current?.focus())
+      return
+    }
+
+    setErrorMessage('')
+    setConfirmationOpen(true)
+  }
+
   async function handleSubmit() {
     if (!attemptId) {
       navigate(APP_ROUTES.testIntro)
@@ -52,7 +75,8 @@ export function TestReviewPage() {
     }
 
     if (unanswered.length > 0) {
-      setErrorMessage('Completa todas las preguntas antes de finalizar la prueba.')
+      setConfirmationOpen(false)
+      requestSubmission()
       return
     }
 
@@ -66,10 +90,13 @@ export function TestReviewPage() {
         questions,
       })
       isFinishingRef.current = true
+      setConfirmationOpen(false)
       navigate(APP_ROUTES.results, { replace: true })
       window.setTimeout(() => clear(), 0)
     } catch (error) {
+      setConfirmationOpen(false)
       setErrorMessage(error instanceof Error ? error.message : 'No fue posible enviar la prueba.')
+      window.requestAnimationFrame(() => errorRef.current?.focus())
     } finally {
       setIsSubmitting(false)
     }
@@ -86,41 +113,92 @@ export function TestReviewPage() {
         <section className="sesion-prueba__panel sesion-prueba__panel--revision">
           <div className="sesion-prueba__encabezado">
             <div className="sesion-prueba__badges">
-              <span className="sesion-prueba__badge">Revision final</span>
+              <span className="sesion-prueba__badge">Revisión final</span>
               <span className="sesion-prueba__badge sesion-prueba__badge--suave">
                 {audienceLabel ?? 'Usuario interno'}
               </span>
             </div>
             <div className="sesion-prueba__badges">
-              <span className="sesion-prueba__badge">{versionLabel ?? 'Version v1.1'}</span>
+              <span className="sesion-prueba__badge">{versionLabel ?? 'Versión v1.1'}</span>
               <span className="sesion-prueba__badge">{attemptLabel ?? 'Intento #00011'}</span>
             </div>
           </div>
 
-          <div className="progreso-prueba__resumen">
-            <div className="progreso-prueba__bloque">
-              <strong>Respuestas registradas</strong>
-              <p>{answeredCount} de {questions.length}</p>
+          <section className="revision-resumen" aria-labelledby="revision-summary-title">
+            <div className="revision-resumen__heading">
+              <div>
+                <span>Estado de tus respuestas</span>
+                <h1 id="revision-summary-title">Revisa antes de enviar</h1>
+              </div>
+              <strong>{completion}% completado</strong>
             </div>
-            <div className="progreso-prueba__bloque progreso-prueba__bloque--alineado">
-              <strong>Estado</strong>
-              <p>{unanswered.length === 0 ? 'Todo listo para enviar' : `Faltan ${unanswered.length} preguntas`}</p>
-            </div>
-          </div>
 
-          <div className="progreso-prueba">
-            <div className="progreso-prueba__avance" style={{ width: `${completion}%` }} />
-          </div>
+            <div className="revision-resumen__cards">
+              <article className="revision-resumen__card revision-resumen__card--answered">
+                <span>Respondidas</span>
+                <strong>{answeredCount}</strong>
+                <small>Respuestas registradas</small>
+              </article>
+              <article className="revision-resumen__card revision-resumen__card--pending">
+                <span>Pendientes</span>
+                <strong>{unanswered.length}</strong>
+                <small>Preguntas por completar</small>
+              </article>
+              <article className="revision-resumen__card revision-resumen__card--total">
+                <span>Total</span>
+                <strong>{questions.length}</strong>
+                <small>Preguntas de la prueba</small>
+              </article>
+            </div>
+
+            <div
+              className={`revision-resumen__status${unanswered.length === 0 ? ' revision-resumen__status--complete' : ''}`}
+              role="status"
+            >
+              <span aria-hidden="true">{unanswered.length === 0 ? '✓' : '!'}</span>
+              <div>
+                <strong>
+                  {unanswered.length === 0
+                    ? 'Tu prueba está completa'
+                    : 'Aún tienes respuestas pendientes'}
+                </strong>
+                <p>
+                  {unanswered.length === 0
+                    ? 'Puedes finalizar cuando hayas comprobado tus respuestas.'
+                    : 'Ve a la primera pendiente o abre una pregunta específica desde el listado.'}
+                </p>
+              </div>
+              {unanswered.length > 0 ? (
+                <button type="button" onClick={goToFirstPending}>
+                  Ir a la primera pendiente
+                </button>
+              ) : null}
+            </div>
+
+            <div
+              className="progreso-prueba"
+              role="progressbar"
+              aria-label="Progreso de respuestas"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={completion}
+            >
+              <div className="progreso-prueba__avance" style={{ width: `${completion}%` }} />
+            </div>
+          </section>
 
           <section className="pregunta-prueba revision-prueba">
             <div className="pregunta-prueba__encabezado">
-              <span>Verificacion de respuestas | {completion}%</span>
+              <span>Verificación de respuestas</span>
             </div>
             <div className="pregunta-prueba__divisor" />
-            <h1>Confirma tus respuestas antes de enviar</h1>
 
             <div className="revision-prueba__contenido">
-              <div className="revision-prueba__lista" tabIndex={0} aria-label="Listado de respuestas">
+              <div
+                className="revision-prueba__lista"
+                tabIndex={0}
+                aria-label="Listado de respuestas"
+              >
                 {questions.map((question, index) => {
                   const answerLabel = getAnswerLabel(question.id)
 
@@ -129,7 +207,9 @@ export function TestReviewPage() {
                       key={question.id}
                       className={[
                         'revision-prueba__item',
-                        answerLabel ? 'revision-prueba__item--respondida' : 'revision-prueba__item--pendiente',
+                        answerLabel
+                          ? 'revision-prueba__item--respondida'
+                          : 'revision-prueba__item--pendiente',
                       ].join(' ')}
                     >
                       <div>
@@ -151,31 +231,39 @@ export function TestReviewPage() {
               </div>
 
               <aside className="revision-prueba__confirmacion">
-                <strong>Confirmacion de envio</strong>
+                <strong>Confirmación de envío</strong>
                 <p>
-                  Revisa el listado. Si alguna pregunta esta pendiente, vuelve a editarla antes de
-                  finalizar la prueba.
+                  Una vez enviada, la prueba se cerrará y verás el resumen de afinidades y programas.
                 </p>
-                {errorMessage ? <p className="form-field__error">{errorMessage}</p> : null}
+                {errorMessage ? (
+                  <p ref={errorRef} className="form-field__error" role="alert" tabIndex={-1}>
+                    {errorMessage}
+                  </p>
+                ) : null}
                 <div className="navegacion-preguntas__acciones revision-prueba__botones">
                   <button
                     type="button"
                     className="navegacion-preguntas__boton navegacion-preguntas__boton--primario"
-                    onClick={() => void handleSubmit()}
-                    disabled={isSubmitting || unanswered.length > 0}
+                    onClick={requestSubmission}
+                    disabled={isSubmitting}
                   >
-                    {isSubmitting
-                      ? 'Enviando...'
-                      : unanswered.length > 0
-                        ? 'Completa pendientes'
-                        : 'Finalizar prueba'}
+                    Finalizar prueba
                   </button>
+                  {unanswered.length > 0 ? (
+                    <button
+                      type="button"
+                      className="navegacion-preguntas__boton navegacion-preguntas__boton--secundario"
+                      onClick={goToFirstPending}
+                    >
+                      Ir a la primera pendiente
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className="navegacion-preguntas__boton navegacion-preguntas__boton--secundario"
                     onClick={() => navigate(APP_ROUTES.testSession)}
                   >
-                    Volver
+                    Volver a preguntas
                   </button>
                 </div>
               </aside>
@@ -183,6 +271,40 @@ export function TestReviewPage() {
           </section>
         </section>
       </div>
+
+      <InstitutionalModal
+        open={confirmationOpen}
+        title="¿Enviar tu prueba vocacional?"
+        theme="dark"
+        onClose={() => {
+          if (!isSubmitting) {
+            setConfirmationOpen(false)
+          }
+        }}
+      >
+        <p>
+          Has respondido las {questions.length} preguntas. Al confirmar, el intento se enviará y ya
+          no podrás modificar estas respuestas.
+        </p>
+        <div className="institutional-modal__actions institutional-modal__actions--row">
+          <button
+            type="button"
+            className="sesion-prueba__accion-final"
+            onClick={() => void handleSubmit()}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Enviando...' : 'Sí, enviar prueba'}
+          </button>
+          <button
+            type="button"
+            className="sesion-prueba__accion-final sesion-prueba__accion-final--secundario"
+            onClick={() => setConfirmationOpen(false)}
+            disabled={isSubmitting}
+          >
+            Seguir revisando
+          </button>
+        </div>
+      </InstitutionalModal>
     </>
   )
 }
