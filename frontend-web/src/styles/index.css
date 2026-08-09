@@ -2929,6 +2929,15 @@ button {
   background: #fff;
 }
 
+.perfil-vocacional__imagen {
+  width: 206px;
+  height: 206px;
+  border-radius: 32px;
+  object-fit: cover;
+  background: #ef7d00;
+  box-shadow: 0 10px 22px rgba(29, 29, 27, 0.18);
+}
+
 .perfil-vocacional__contenido {
   align-self: center;
 }
@@ -2980,6 +2989,8 @@ button {
   box-shadow: none;
   background: transparent;
   padding: 0 12px 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .grafico-afinidad .chart-card h3 {
@@ -2988,6 +2999,67 @@ button {
   color: #121212;
   font-family: 'Poppins', sans-serif;
   font-size: 28px;
+  font-weight: 700;
+}
+
+.chart-card__pista {
+  margin: 10px 0 0;
+  text-align: center;
+  color: #a45c09;
+  font-size: 14px;
+}
+
+.perfil-vocacional-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 10px 12px;
+}
+
+.perfil-vocacional-card__principal {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.perfil-vocacional-card__imagen {
+  width: 270px;
+  height: 270px;
+  border-radius: 24px;
+  object-fit: cover;
+}
+
+.perfil-vocacional-card__area {
+  margin-bottom: 10px;
+  color: #ef7d00;
+  font-family: 'Poppins', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.perfil-vocacional-card__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.perfil-vocacional-card__lista li {
+  position: relative;
+  padding-left: 20px;
+  color: #121212;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.perfil-vocacional-card__lista li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #ef7d00;
   font-weight: 700;
 }
 
@@ -3076,6 +3148,7 @@ button {
 }
 
 .carreras-recomendadas__acciones button,
+.carreras-recomendadas__enlace,
 .acciones-resultado__flotante,
 .acciones-resultado__descarga {
   font-family: 'Poppins', sans-serif;
@@ -3090,6 +3163,24 @@ button {
   color: #fff;
   font-size: 18px;
   font-weight: 700;
+}
+
+.carreras-recomendadas__enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: #ef7d00;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.carreras-recomendadas__enlace:hover {
+  background: #b25d00;
 }
 
 .resumen-resultado {
@@ -3138,20 +3229,31 @@ button {
   position: sticky;
   right: 10px;
   bottom: 30px;
-  margin: 20px 0 0px auto;
+  margin: 20px 0 0 auto;
   z-index: 1000;
-  min-height: 74px;
-  padding: 0 22px 0 10px;
+  width: 23%;
+  min-width: 200px;
+  min-height: 58px;
+  padding: 6px 14px 6px 8px;
   border: 0;
   border-radius: 999px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   background: #ef7d00;
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
+  text-decoration: none;
   box-shadow: 0 10px 24px rgba(29, 29, 27, 0.2);
+}
+
+.acciones-resultado__flotante .resultado-vocacional__avatar--compacto {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  font-size: 15px;
 }
 
 @media (max-width: 1100px) {
@@ -3159,7 +3261,8 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .perfil-vocacional__icono {
+  .perfil-vocacional__icono,
+  .perfil-vocacional__imagen {
     justify-self: start;
   }
 
@@ -3174,6 +3277,16 @@ button {
 }
 
 @media (max-width: 720px) {
+  .perfil-vocacional-card__principal {
+    grid-template-columns: 170px 1fr;
+    gap: 14px;
+  }
+
+  .perfil-vocacional-card__imagen {
+    width: 170px;
+    height: 170px;
+  }
+
   .resultado-vocacional {
     padding: 20px 10px 20px;
   }
@@ -3202,6 +3315,12 @@ button {
 
   .acciones-resultado__descarga {
     min-width: 100%;
+  }
+
+  .acciones-resultado__flotante {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
   }
 }
 

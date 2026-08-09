@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { authService } from '../services/authService'
+import { clearAccessToken } from '../services/tokenStore'
 import type { LoginPayload, RegisterPayload, UserProfile } from '../types'
 
 interface AuthState {
@@ -27,12 +28,13 @@ export const useAuthStore = create<AuthState>()(
       async register(payload) {
         const response = await authService.register(payload)
         set({
-          sessionUser: response.data,
-          accessToken: `mock-token-${response.data.id}`,
+          sessionUser: response.data.user,
+          accessToken: response.data.accessToken,
         })
-        return response.data
+        return response.data.user
       },
       signOut() {
+        clearAccessToken()
         set({ sessionUser: null, accessToken: null })
       },
     }),

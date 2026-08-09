@@ -94,6 +94,7 @@ export function TestQuestionPage() {
         attemptId,
         submittedAt: new Date().toISOString(),
         answers,
+        questions,
       })
       navigate(APP_ROUTES.results, { replace: true })
       window.setTimeout(() => clear(), 0)

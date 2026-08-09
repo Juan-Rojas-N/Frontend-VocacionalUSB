@@ -1,7 +1,42 @@
+import { useEffect } from 'react'
+import { catalogService } from '../../services/catalogService'
 import { useAuthStore } from '../../stores/authStore'
+import { getDepartmentDisplayName, getMunicipalityDisplayName } from '../../utils/catalogs'
 
 export function ProfilePage() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
+
+  useEffect(() => {
+    let active = true
+
+    async function loadCatalogs() {
+      try {
+        await catalogService.loadAll()
+        if (active && sessionUser?.departmentId) {
+          await catalogService.loadMunicipalities(sessionUser.departmentId)
+        }
+      } catch {
+        // Se conservan los nombres guardados en el perfil.
+      }
+    }
+
+    void loadCatalogs()
+
+    return () => {
+      active = false
+    }
+  }, [sessionUser?.departmentId])
+
+  const departmentName = sessionUser
+    ? getDepartmentDisplayName(sessionUser.departmentId, sessionUser.departmentName)
+    : 'Sin departamento'
+  const municipalityName = sessionUser
+    ? getMunicipalityDisplayName(
+        sessionUser.departmentId,
+        sessionUser.municipalityId,
+        sessionUser.municipalityName,
+      )
+    : 'Sin municipio'
 
   return (
     <div className="profile-shell">
@@ -30,11 +65,11 @@ export function ProfilePage() {
           </div>
           <div>
             <span>Ciudad</span>
-            <strong>{sessionUser?.municipalityName}</strong>
+            <strong>{municipalityName}</strong>
           </div>
           <div>
             <span>Departamento</span>
-            <strong>{sessionUser?.departmentName}</strong>
+            <strong>{departmentName}</strong>
           </div>
         </div>
       </section>

@@ -8,12 +8,7 @@ export type GenderOption =
 
 export type InstitutionRelationship = 'Inscrito' | 'Estudiante'
 
-export type VocationalArea =
-  | 'Ingeniería y tecnología'
-  | 'Salud y bienestar'
-  | 'Negocios y gestión'
-  | 'Ciencias sociales'
-  | 'Arte y comunicación'
+export type VocationalArea = string
 
 export interface ApiEnvelope<T> {
   data: T
@@ -156,6 +151,8 @@ export interface AnswerOption {
 
 export interface TestQuestion {
   id: string
+  preguntaId: number
+  codigoPregunta: string
   prompt: string
   dimension: string
   area: VocationalArea
@@ -179,6 +176,7 @@ export interface TestSubmissionPayload {
   attemptId: string
   submittedAt: string
   answers: Record<string, number>
+  questions: TestQuestion[]
 }
 
 export interface CareerRecommendation {
@@ -188,6 +186,8 @@ export interface CareerRecommendation {
   area: VocationalArea
   summary: string
   rationale: string[]
+  url?: string
+  pathLogo?: string
 }
 
 export interface ChartDatum {
@@ -195,10 +195,13 @@ export interface ChartDatum {
   value: number
 }
 
-export interface RadarDatum {
-  subject: string
-  score: number
-  fullMark: number
+export interface AreaProfile {
+  idArea: number
+  nombreArea: string
+  valorAfinidad: number
+  perfil?: string
+  descripcionArea?: string
+  imagenUrl?: string
 }
 
 export interface VocationalResult {
@@ -208,7 +211,68 @@ export interface VocationalResult {
   qualitativeSummary: string
   careers: CareerRecommendation[]
   affinityByArea: ChartDatum[]
-  radarProfile: RadarDatum[]
+  areaProfiles?: AreaProfile[]
+  perfil?: string
+  descripcionArea?: string
+  nombreReporte?: string
+  url?: string
+}
+
+export interface BackendPreguntaPrueba {
+  id: number
+  codigo: string | null
+  enunciado: string
+  idPrograma: number
+  nombrePrograma: string
+  idArea: number
+  nombreArea: string
+}
+
+export interface BackendRespuestaPrueba {
+  preguntaId: number
+  codigoPregunta: string
+  valor: number
+}
+
+export interface BackendPrueba {
+  id: number | null
+  fecha: string | null
+  tiempoInvertido: number | null
+  versionPrueba: string | null
+  satisfaccion: number | null
+  activo: boolean
+}
+
+export interface BackendAfinidadArea {
+  idArea: number
+  nombreArea: string
+  valorAfinidad: number
+  perfil: string | null
+  descripcionArea: string | null
+  pathLogo: string | null
+}
+
+export interface BackendProgramaAfinidad {
+  idPrograma: number
+  nombrePrograma: string
+  valorAfinidad: number
+  descripcionPrograma: string | null
+  urlPrograma: string | null
+  pathLogo: string | null
+  nombreArea: string | null
+}
+
+export interface BackendResultado {
+  idPrueba: number
+  fecha: string | null
+  idAreaPredominante: number
+  nombreAreaPredominante: string
+  perfil: string | null
+  descripcionArea: string | null
+  afinidadPorArea: BackendAfinidadArea[]
+  programasRecomendados: BackendProgramaAfinidad[]
+  nombreReporte: string
+  url: string | null
 }
 
 export interface DashboardMetric {

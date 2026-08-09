@@ -2,11 +2,32 @@ import { ACADEMIC_PROGRAM_GROUPS } from '../constants'
 import colombiaCatalog from '../data/colombiaCatalog.json'
 import type {
   AcademicProgram,
+  AcademicProgramGroup,
   DepartmentCatalogItem,
   MunicipalityCatalogItem,
 } from '../types'
 
-const departments = colombiaCatalog.departments as DepartmentCatalogItem[]
+let departmentCatalog: DepartmentCatalogItem[] =
+  colombiaCatalog.departments as DepartmentCatalogItem[]
+
+let academicProgramGroups: AcademicProgramGroup[] = ACADEMIC_PROGRAM_GROUPS
+
+export function setDepartmentCatalog(items: DepartmentCatalogItem[]) {
+  departmentCatalog = items
+}
+
+export function setDepartmentMunicipalities(
+  departmentId: string,
+  municipalities: MunicipalityCatalogItem[],
+) {
+  departmentCatalog = departmentCatalog.map((department) =>
+    department.id === departmentId ? { ...department, municipalities } : department,
+  )
+}
+
+export function setAcademicProgramGroups(groups: AcademicProgramGroup[]) {
+  academicProgramGroups = groups
+}
 
 function normalizeLookupValue(value?: string | null) {
   return value
@@ -16,10 +37,6 @@ function normalizeLookupValue(value?: string | null) {
     .trim()
     .toLowerCase()
 }
-
-export const departmentCatalog = departments
-
-export const academicPrograms = ACADEMIC_PROGRAM_GROUPS.flatMap((group) => group.programs)
 
 export function findDepartmentById(departmentId?: string | null) {
   return departmentCatalog.find((department) => department.id === departmentId)
@@ -73,14 +90,16 @@ export function findMunicipalityByNameAcrossCatalog(name?: string | null) {
 }
 
 export function findAcademicProgramById(programId?: string | null) {
-  return academicPrograms.find((program) => program.id === programId)
+  return academicProgramGroups
+    .flatMap((group) => group.programs)
+    .find((program) => program.id === programId)
 }
 
 export function findAcademicProgramByName(name?: string | null) {
   const normalizedName = normalizeLookupValue(name)
-  return academicPrograms.find(
-    (program) => normalizeLookupValue(program.name) === normalizedName,
-  )
+  return academicProgramGroups
+    .flatMap((group) => group.programs)
+    .find((program) => normalizeLookupValue(program.name) === normalizedName)
 }
 
 export function isMunicipalityValidForDepartment(
@@ -127,7 +146,7 @@ export function getDepartmentOptions() {
 }
 
 export function getAcademicProgramOptionGroups() {
-  return ACADEMIC_PROGRAM_GROUPS.map((group) => ({
+  return academicProgramGroups.map((group) => ({
     id: group.id,
     label: group.label,
     programs: group.programs.map((program) => ({

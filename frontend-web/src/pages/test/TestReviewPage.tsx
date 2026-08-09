@@ -63,6 +63,7 @@ export function TestReviewPage() {
         attemptId,
         submittedAt: new Date().toISOString(),
         answers,
+        questions,
       })
       isFinishingRef.current = true
       navigate(APP_ROUTES.results, { replace: true })

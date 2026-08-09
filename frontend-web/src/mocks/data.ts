@@ -83,6 +83,8 @@ export const defaultMockUsers: RegisteredUserRecord[] = [
 export const mockQuestions: TestQuestion[] = [
   {
     id: 'q-1',
+    preguntaId: 1,
+    codigoPregunta: 'P-1',
     prompt: 'Me gusta resolver problemas lógicos y estructurados paso a paso',
     dimension: 'Razonamiento analítico',
     area: 'Ingeniería y tecnología',
@@ -90,6 +92,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-2',
+    preguntaId: 2,
+    codigoPregunta: 'P-2',
     prompt: 'Disfruto investigar causas, reunir evidencia y sacar conclusiones',
     dimension: 'Investigación',
     area: 'Ingeniería y tecnología',
@@ -97,6 +101,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-3',
+    preguntaId: 3,
+    codigoPregunta: 'P-3',
     prompt: 'Me siento cómodo explicando ideas complejas a otras personas',
     dimension: 'Comunicación',
     area: 'Arte y comunicación',
@@ -104,6 +110,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-4',
+    preguntaId: 4,
+    codigoPregunta: 'P-4',
     prompt: 'Me interesan los procesos creativos relacionados con diseño y contenidos',
     dimension: 'Creatividad',
     area: 'Arte y comunicación',
@@ -111,6 +119,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-5',
+    preguntaId: 5,
+    codigoPregunta: 'P-5',
     prompt: 'Prefiero actividades donde pueda liderar o coordinar a otras personas',
     dimension: 'Liderazgo',
     area: 'Negocios y gestión',
@@ -118,6 +128,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-6',
+    preguntaId: 6,
+    codigoPregunta: 'P-6',
     prompt: 'Me motiva entender cómo funcionan los sistemas y mejorarlos',
     dimension: 'Pensamiento sistémico',
     area: 'Ingeniería y tecnología',
@@ -125,6 +137,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-7',
+    preguntaId: 7,
+    codigoPregunta: 'P-7',
     prompt: 'Suelo observar con atención el comportamiento humano y sus motivaciones',
     dimension: 'Empatía',
     area: 'Ciencias sociales',
@@ -132,6 +146,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-8',
+    preguntaId: 8,
+    codigoPregunta: 'P-8',
     prompt: 'Me interesa acompañar procesos educativos, sociales o comunitarios',
     dimension: 'Impacto social',
     area: 'Ciencias sociales',
@@ -139,6 +155,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-9',
+    preguntaId: 9,
+    codigoPregunta: 'P-9',
     prompt: 'Me llaman la atención los temas de salud, bienestar y cuidado integral',
     dimension: 'Bienestar',
     area: 'Salud y bienestar',
@@ -146,6 +164,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-10',
+    preguntaId: 10,
+    codigoPregunta: 'P-10',
     prompt: 'Puedo combinar creatividad con orden para producir resultados concretos',
     dimension: 'Gestión creativa',
     area: 'Negocios y gestión',
@@ -153,6 +173,8 @@ export const mockQuestions: TestQuestion[] = [
   },
   {
     id: 'q-11',
+    preguntaId: 11,
+    codigoPregunta: 'P-11',
     prompt: 'Disfruto aprender herramientas tecnológicas y usarlas para resolver necesidades',
     dimension: 'Tecnología aplicada',
     area: 'Ingeniería y tecnología',
@@ -210,12 +232,43 @@ export const mockResult: VocationalResult = {
     { label: 'Social', value: 21 },
     { label: 'Ciencias', value: 21 },
   ],
-  radarProfile: [
-    { subject: 'Análisis', score: 84, fullMark: 100 },
-    { subject: 'Creatividad', score: 63, fullMark: 100 },
-    { subject: 'Comunicación', score: 78, fullMark: 100 },
-    { subject: 'Liderazgo', score: 57, fullMark: 100 },
-    { subject: 'Investigación', score: 72, fullMark: 100 },
+  areaProfiles: [
+    {
+      idArea: 3,
+      nombreArea: 'Ingeniería y tecnología',
+      valorAfinidad: 33,
+      perfil: 'Pensamiento lógico, resolución de problemas, diseño de sistemas.',
+      descripcionArea:
+        'En esta área puedes diseñar, construir y mejorar sistemas, productos y procesos con base tecnológica.',
+      imagenUrl: '/vocacional/images/areas/Ingenieria.png',
+    },
+    {
+      idArea: 6,
+      nombreArea: 'Artes y Creatividad',
+      valorAfinidad: 21,
+      perfil: 'Expresión estética, pensamiento divergente, dominio de materiales.',
+      descripcionArea:
+        'En esta área puedes comunicar ideas y emociones mediante imágenes, sonidos y formatos creativos.',
+      imagenUrl: '/vocacional/images/areas/Artes.png',
+    },
+    {
+      idArea: 5,
+      nombreArea: 'Ciencias Sociales y Humanas',
+      valorAfinidad: 21,
+      perfil: 'Análisis crítico, interés por lo humano, comunicación verbal.',
+      descripcionArea:
+        'En esta área puedes comprender el comportamiento humano y analizar problemáticas sociales.',
+      imagenUrl: '/vocacional/images/areas/Ciencias_Sociales_Humanas.png',
+    },
+    {
+      idArea: 7,
+      nombreArea: 'Ciencias Exactas y Naturales',
+      valorAfinidad: 21,
+      perfil: 'Investigación, abstracción, curiosidad por las leyes de la naturaleza.',
+      descripcionArea:
+        'En esta área puedes investigar fenómenos matemáticos, físicos, químicos y biológicos.',
+      imagenUrl: '/vocacional/images/areas/Ciencias_Exactas.png',
+    },
   ],
 }
 
