@@ -6,11 +6,6 @@ import { useAuthStore } from '../../stores/authStore'
 import type { VocationalResult } from '../../types'
 import { formatDate, formatPercentage } from '../../utils/formatters'
 
-type ResultsState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; data: VocationalResult }
-
 export function ResultsPage() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
   const [data, setData] = useState<VocationalResult | null>(null)
@@ -33,17 +28,13 @@ export function ResultsPage() {
       })
   }, [])
 
-  const selectedArea = useMemo(() => {
-    if (resultState.status !== 'ready') {
+  const topCareer = useMemo(() => {
+    if (!data) {
       return null
     }
 
-    return (
-      resultState.data.areas.find((area) => area.id === selectedAreaId) ??
-      resultState.data.areas[0] ??
-      null
-    )
-  }, [resultState, selectedAreaId])
+    return [...data.careers].sort((left, right) => right.affinity - left.affinity)[0] ?? null
+  }, [data])
 
   const selectedProfile = useMemo(() => {
     if (!data || !selectedArea) {
@@ -92,59 +83,15 @@ export function ResultsPage() {
     )
   }
 
-    return resultState.data.careers
-      .filter((career) => career.area === selectedArea.name)
-      .sort((left, right) => right.affinity - left.affinity)
-  }, [resultState, selectedArea])
-
-  if (resultState.status === 'loading') {
+  if (!data || !topCareer) {
     return <div className="loading-state">Cargando resultados...</div>
   }
-
-  if (resultState.status === 'error') {
-    return (
-      <div className="resultado-vocacional resultado-vocacional--state">
-        <section className="resultado-vocacional__empty" role="alert">
-          <h1>No pudimos mostrar tus resultados</h1>
-          <p>{resultState.message}</p>
-          <button type="button" onClick={() => window.location.reload()}>
-            Reintentar
-          </button>
-        </section>
-      </div>
-    )
-  }
-
-  if (!selectedArea) {
-    return (
-      <div className="resultado-vocacional resultado-vocacional--state">
-        <section className="resultado-vocacional__empty">
-          <h1>Resultado sin afinidades</h1>
-          <p>Cuando exista información por área, podrás explorar el perfil correspondiente aquí.</p>
-        </section>
-      </div>
-    )
-  }
-
-  const data = resultState.data
 
   return (
     <div className="resultado-vocacional">
       <section className="resultado-vocacional__panel">
-        <header className="resultado-vocacional__encabezado resultado-vocacional__encabezado--actions">
-          <div>
-            <span className="resultado-vocacional__eyebrow">Informe personal</span>
-            <h1>Resultados de tu prueba vocacional</h1>
-            <p>{sessionUser?.fullName ?? 'Usuario USB'}, explora cada área para conocer su perfil.</p>
-          </div>
-          <button
-            type="button"
-            className="acciones-resultado__descarga"
-            onClick={() => window.print()}
-          >
-            <span>Imprimir / guardar PDF</span>
-            <span aria-hidden="true">↧</span>
-          </button>
+        <header className="resultado-vocacional__encabezado">
+          <h1>Resultados de tu prueba vocacional</h1>
         </header>
 
         <section className="perfil-vocacional">
@@ -207,32 +154,6 @@ export function ResultsPage() {
               </article>
             ))}
           </div>
-          {selectedCareers.length > 0 ? (
-            <div className="carreras-recomendadas__lista">
-              {selectedCareers.map((career, index) => (
-                <article key={career.id} className="carreras-recomendadas__tarjeta">
-                  <div className="carreras-recomendadas__ranking">{index + 1}</div>
-                  <div className="carreras-recomendadas__contenido">
-                    <strong>{career.name}</strong>
-                    <span>{formatPercentage(career.affinity)} de compatibilidad</span>
-                    <p>{career.summary}</p>
-                    <details className="carreras-recomendadas__details">
-                      <summary>¿Por qué se recomienda?</summary>
-                      <ul>
-                        {career.rationale.map((reason) => (
-                          <li key={reason}>{reason}</li>
-                        ))}
-                      </ul>
-                    </details>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="carreras-recomendadas__empty">
-              Aún no hay programas recomendados para esta área en el resultado mock.
-            </div>
-          )}
         </section>
 
         <section className="resumen-resultado">
@@ -249,11 +170,18 @@ export function ResultsPage() {
             conocer programas, investigar sus campos de acción y descubrir cuáles se ajustan mejor a
             tu proyecto de vida.
           </p>
-          <p>{data.qualitativeSummary}</p>
           <p className="resumen-resultado__meta">
-            Informe generado el {formatDate(data.generatedAt)}. Es una guía inicial y no reemplaza
-            orientación profesional.
+            Informe generado el {formatDate(data.generatedAt)} con recomendaciones iniciales.
           </p>
+          {statusMessage ? <p className="resumen-resultado__estado">{statusMessage}</p> : null}
+          <button
+            type="button"
+            className="acciones-resultado__descarga"
+            onClick={handleDownload}
+          >
+            <span>Descargar PDF</span>
+            <span aria-hidden="true">↓</span>
+          </button>
         </section>
       </section>
 
