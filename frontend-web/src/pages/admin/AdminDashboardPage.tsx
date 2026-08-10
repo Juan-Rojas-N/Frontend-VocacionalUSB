@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { adminService } from '../../services/adminService'
+import { generateAdminOverviewPdf } from '../../services/pdfService'
 import { useAuthStore } from '../../stores/authStore'
 import type { AdminDashboard, AdminResultRecord } from '../../types'
 import { getUserRoleLabel } from '../../utils/roles'
+import { buildOverviewCsv, downloadTextFile } from '../../utils/reports'
 import { AdminCatalogSettingsView } from './components/AdminCatalogSettingsView'
 import { AdminOverviewView } from './components/AdminOverviewView'
 import { AdminReportsView } from './components/AdminReportsView'
@@ -89,14 +91,26 @@ export function AdminDashboardPage() {
     }))
   }, [rows])
 
-  async function handleOverviewExport(format: 'pdf' | 'csv' | 'excel') {
+  function handleOverviewExport(format: 'pdf' | 'csv') {
+    if (!dashboard) {
+      return
+    }
+
     try {
-      setExportStatus('Preparando exportación mock...')
-      const response = await adminService.exportReport(format)
-      setExportStatus(response.data.status)
+      if (format === 'pdf') {
+        setExportStatus('Generando PDF...')
+        const fileName = generateAdminOverviewPdf(dashboard, rows)
+        setExportStatus(`PDF generado correctamente (${fileName}).`)
+        return
+      }
+
+      setExportStatus('Generando CSV...')
+      const csv = buildOverviewCsv(rows)
+      downloadTextFile('resumen-general-usb-vocacional.csv', csv, 'text/csv;charset=utf-8')
+      setExportStatus('CSV descargado correctamente.')
     } catch (error) {
       setExportStatus(
-        error instanceof Error ? error.message : 'No fue posible preparar la exportación.',
+        error instanceof Error ? error.message : 'No fue posible generar la exportación.',
       )
     }
   }

@@ -4,7 +4,7 @@ interface AdminOverviewViewProps {
   dashboard: AdminDashboard
   rows: AdminResultRecord[]
   exportStatus: string
-  onExport: (format: 'pdf' | 'csv' | 'excel') => void
+  onExport: (format: 'pdf' | 'csv') => void
 }
 
 export function AdminOverviewView({
@@ -27,9 +27,6 @@ export function AdminOverviewView({
           </button>
           <button type="button" onClick={() => onExport('csv')}>
             Exportar CSV
-          </button>
-          <button type="button" onClick={() => onExport('excel')}>
-            Exportar Excel
           </button>
         </div>
       </header>

@@ -1,4 +1,4 @@
-import type { AdminReportFilters, AdminReportRow, AdminReportStats } from '../types'
+import type { AdminReportFilters, AdminReportRow, AdminReportStats, AdminResultRecord } from '../types'
 
 function round(value: number): number {
   return Math.round(value * 10) / 10
@@ -121,6 +121,18 @@ export function buildReportCsv(rows: AdminReportRow[]): string {
       row.affinity,
       row.isInterno ? 'Interno' : 'Externo',
     ]
+      .map(toCsvCell)
+      .join(';'),
+  )
+
+  return `\ufeff${header.map(toCsvCell).join(';')}\n${lines.join('\n')}`
+}
+
+export function buildOverviewCsv(rows: AdminResultRecord[]): string {
+  const header = ['Estudiante', 'Ciudad', 'Área principal', 'Programa sugerido', 'Afinidad (%)']
+
+  const lines = rows.map((row) =>
+    [row.studentName, row.city, row.primaryArea, row.topCareer, row.affinity]
       .map(toCsvCell)
       .join(';'),
   )

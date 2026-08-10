@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import type { VocationalResult } from '../types'
+import type { AdminDashboard, AdminResultRecord, VocationalResult } from '../types'
 import { formatDate, formatPercentage } from '../utils/formatters'
 
 const BRAND_RGB: [number, number, number] = [239, 125, 0]
@@ -135,6 +135,142 @@ export function generateResultPdf(result: VocationalResult, userName: string): s
 
   const baseName = sanitizeFileName(result.nombreReporte ?? 'resultado-vocacional')
   const fileName = `${baseName}.pdf`
+  doc.save(fileName)
+  return fileName
+}
+
+export function generateAdminOverviewPdf(
+  dashboard: AdminDashboard,
+  rows: AdminResultRecord[],
+): string {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const margin = 48
+
+  const encabezado = () => {
+    doc.setFillColor(...BRAND_RGB)
+    doc.rect(0, 0, pageWidth, 96, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(18)
+    doc.text('Orientación Vocacional USB', margin, 44)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(11)
+    doc.text('Panel de seguimiento · Resumen general', margin, 66)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text('usbbog.edu.co', pageWidth - margin, 66, { align: 'right' })
+  }
+
+  const piePagina = () => {
+    const pages = doc.getNumberOfPages()
+    for (let i = 1; i <= pages; i += 1) {
+      doc.setPage(i)
+      doc.setDrawColor(...LINE_RGB)
+      doc.line(margin, doc.internal.pageSize.getHeight() - 40, pageWidth - margin, doc.internal.pageSize.getHeight() - 40)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9)
+      doc.setTextColor(...GRAY_RGB)
+      doc.text('Orientación Vocacional USB · Documento de seguimiento institucional.', margin, doc.internal.pageSize.getHeight() - 22)
+      doc.text(`Página ${i} de ${pages}`, pageWidth - margin, doc.internal.pageSize.getHeight() - 22, { align: 'right' })
+    }
+  }
+
+  const seccion = (titulo: string, startY: number) => {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    doc.setTextColor(...DARK_RGB)
+    doc.text(titulo, margin, startY)
+    return startY + 8
+  }
+
+  encabezado()
+
+  let cursorY = 128
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(13)
+  doc.setTextColor(...DARK_RGB)
+  doc.text('Resumen general', margin, cursorY)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor(...GRAY_RGB)
+  cursorY += 16
+  doc.text(`Fecha de generación: ${formatDate(new Date().toISOString())}`, margin, cursorY)
+  cursorY += 15
+  doc.text(`Resultados recientes: ${rows.length}`, margin, cursorY)
+
+  cursorY += 30
+  cursorY = seccion('Indicadores', cursorY)
+  autoTable(doc, {
+    startY: cursorY,
+    head: [['Indicador', 'Valor']],
+    body: dashboard.metrics.map((metric) => [metric.label, metric.value]),
+    theme: 'grid',
+    headStyles: { fillColor: BRAND_RGB, textColor: 255, fontStyle: 'bold', fontSize: 10 },
+    styles: { fontSize: 9, textColor: DARK_RGB, cellPadding: 6 },
+    columnStyles: { 1: { halign: 'right', cellWidth: 90 } },
+    margin: { left: margin, right: margin },
+  })
+  cursorY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 24
+
+  const totalInternos = dashboard.internos ?? 0
+  const totalExternos = dashboard.externos ?? 0
+  const internosPorcentaje =
+    dashboard.affinityDistribution[0]?.value ??
+    (totalInternos + totalExternos === 0
+      ? 0
+      : Math.round((totalInternos / (totalInternos + totalExternos)) * 100))
+
+  cursorY = seccion('Distribución de usuarios', cursorY)
+  autoTable(doc, {
+    startY: cursorY,
+    head: [['Tipo de usuario', 'Cantidad', 'Porcentaje']],
+    body: [
+      ['Internos (con programa de interés)', totalInternos, formatPercentage(internosPorcentaje)],
+      ['Externos (sin programa asociado)', totalExternos, formatPercentage(100 - internosPorcentaje)],
+    ],
+    theme: 'grid',
+    headStyles: { fillColor: DARK_RGB, textColor: 255, fontStyle: 'bold', fontSize: 10 },
+    styles: { fontSize: 9, textColor: DARK_RGB, cellPadding: 6 },
+    columnStyles: { 1: { halign: 'right', cellWidth: 70 }, 2: { halign: 'right', cellWidth: 70 } },
+    margin: { left: margin, right: margin },
+  })
+  cursorY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 24
+
+  cursorY = seccion('Distribución geográfica', cursorY)
+  autoTable(doc, {
+    startY: cursorY,
+    head: [['Región', 'Usuarios', 'Pruebas finalizadas']],
+    body: dashboard.geographicDistribution.map((item) => [item.region, item.users, item.completedTests]),
+    theme: 'grid',
+    headStyles: { fillColor: DARK_RGB, textColor: 255, fontStyle: 'bold', fontSize: 10 },
+    styles: { fontSize: 9, textColor: DARK_RGB, cellPadding: 6 },
+    columnStyles: { 1: { halign: 'right', cellWidth: 70 }, 2: { halign: 'right', cellWidth: 90 } },
+    margin: { left: margin, right: margin },
+  })
+  cursorY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 24
+
+  cursorY = seccion('Resultados recientes', cursorY)
+  autoTable(doc, {
+    startY: cursorY,
+    head: [['Estudiante', 'Ciudad', 'Área principal', 'Programa sugerido', 'Afinidad']],
+    body: rows.map((row) => [
+      row.studentName,
+      row.city,
+      row.primaryArea,
+      row.topCareer,
+      formatPercentage(row.affinity),
+    ]),
+    theme: 'grid',
+    headStyles: { fillColor: BRAND_RGB, textColor: 255, fontStyle: 'bold', fontSize: 10 },
+    styles: { fontSize: 9, textColor: DARK_RGB, cellPadding: 6 },
+    columnStyles: { 4: { halign: 'right', cellWidth: 70 } },
+    margin: { left: margin, right: margin },
+  })
+
+  piePagina()
+
+  const fileName = 'resumen-general-usb-vocacional.pdf'
   doc.save(fileName)
   return fileName
 }
