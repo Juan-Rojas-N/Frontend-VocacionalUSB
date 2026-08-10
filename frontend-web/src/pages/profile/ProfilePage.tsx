@@ -1,7 +1,40 @@
-import { useEffect } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useMemo, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { z } from 'zod'
 import { catalogService } from '../../services/catalogService'
+import { userService } from '../../services/userService'
 import { useAuthStore } from '../../stores/authStore'
-import { getDepartmentDisplayName, getMunicipalityDisplayName } from '../../utils/catalogs'
+import type { UserProfile } from '../../types'
+import {
+  getDepartmentDisplayName,
+  getDepartmentOptions,
+  getMunicipalityDisplayName,
+  getMunicipalitiesByDepartment,
+} from '../../utils/catalogs'
+
+const profileSchema = z.object({
+  firstName: z.string().trim().min(2, 'Ingresa al menos 2 caracteres.'),
+  lastName: z.string().trim().min(2, 'Ingresa al menos 2 caracteres.'),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+?[0-9 ]{7,16}$/, 'Ingresa un teléfono válido.'),
+  departmentId: z.string().min(1, 'Selecciona un departamento.'),
+  municipalityId: z.string().min(1, 'Selecciona una ciudad.'),
+})
+
+type ProfileFormValues = z.infer<typeof profileSchema>
+
+function toFormValues(profile: UserProfile): ProfileFormValues {
+  return {
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    phone: profile.phone,
+    departmentId: profile.departmentId,
+    municipalityId: profile.municipalityId,
+  }
+}
 
 export function ProfilePage() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
@@ -11,78 +44,6 @@ export function ProfilePage() {
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null,
   )
-
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    setError,
-    setValue,
-    formState: { errors, isDirty },
-  } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: sessionUser
-      ? toFormValues(sessionUser)
-      : {
-          firstName: '',
-          lastName: '',
-          username: '',
-          email: '',
-          phone: '',
-          departmentId: '',
-          municipalityId: '',
-        },
-  })
-
-  const departmentId = useWatch({ control, name: 'departmentId' })
-  const municipalities = useMemo(
-    () => getMunicipalitiesByDepartment(departmentId),
-    [departmentId],
-  )
-
-  if (!sessionUser) {
-    return <div className="loading-state">Cargando perfil...</div>
-  }
-
-  const departmentRegistration = register('departmentId')
-
-  const onSubmit = handleSubmit(async (values) => {
-    try {
-      setIsSaving(true)
-      setStatus(null)
-      const response = await userService.updateProfile(sessionUser.id, values)
-      updateSessionUser(response.data)
-      reset(toFormValues(response.data))
-      setIsEditing(false)
-      setStatus({
-        tone: 'success',
-        message: `${response.message ?? 'Perfil actualizado.'} La integración HTTP sigue pendiente.`,
-      })
-    } catch (error) {
-      if (error instanceof MockValidationError) {
-        for (const [field, message] of Object.entries(error.fieldErrors)) {
-          setError(field as keyof ProfileFormValues, { type: 'server', message })
-        }
-      }
-
-      setStatus({
-        tone: 'error',
-        message: error instanceof Error ? error.message : 'No fue posible actualizar el perfil.',
-      })
-    } finally {
-      setIsSaving(false)
-    }
-  })
-
-  function cancelEditing() {
-    if (!sessionUser) {
-      return
-    }
-    reset(toFormValues(sessionUser))
-    setIsEditing(false)
-    setStatus(null)
-  }
 
   useEffect(() => {
     let active = true
@@ -105,16 +66,81 @@ export function ProfilePage() {
     }
   }, [sessionUser?.departmentId])
 
-  const departmentName = sessionUser
-    ? getDepartmentDisplayName(sessionUser.departmentId, sessionUser.departmentName)
-    : 'Sin departamento'
-  const municipalityName = sessionUser
-    ? getMunicipalityDisplayName(
-        sessionUser.departmentId,
-        sessionUser.municipalityId,
-        sessionUser.municipalityName,
-      )
-    : 'Sin municipio'
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors, isDirty },
+  } = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: sessionUser
+      ? toFormValues(sessionUser)
+      : {
+          firstName: '',
+          lastName: '',
+          phone: '',
+          departmentId: '',
+          municipalityId: '',
+        },
+  })
+
+  const departmentId = useWatch({ control, name: 'departmentId' })
+  const municipalities = useMemo(
+    () => getMunicipalitiesByDepartment(departmentId),
+    [departmentId],
+  )
+
+  if (!sessionUser) {
+    return <div className="loading-state">Cargando perfil...</div>
+  }
+
+  const departmentRegistration = register('departmentId')
+
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      setIsSaving(true)
+      setStatus(null)
+      const updated = await userService.updateProfile({
+        nombre: values.firstName,
+        apellidos: values.lastName,
+        telefono: values.phone,
+        departamento: values.departmentId,
+        municipio: values.municipalityId,
+      })
+      updateSessionUser(updated)
+      reset(toFormValues(updated))
+      setIsEditing(false)
+      setStatus({ tone: 'success', message: 'Perfil actualizado correctamente.' })
+    } catch (error) {
+      setStatus({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'No fue posible actualizar el perfil.',
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  })
+
+  function cancelEditing() {
+    if (!sessionUser) {
+      return
+    }
+    reset(toFormValues(sessionUser))
+    setIsEditing(false)
+    setStatus(null)
+  }
+
+  const departmentName = getDepartmentDisplayName(
+    sessionUser.departmentId,
+    sessionUser.departmentName,
+  )
+  const municipalityName = getMunicipalityDisplayName(
+    sessionUser.departmentId,
+    sessionUser.municipalityId,
+    sessionUser.municipalityName,
+  )
 
   return (
     <div className="profile-shell">
@@ -142,27 +168,11 @@ export function ProfilePage() {
           ) : null}
         </div>
 
-        <div className="profile-grid">
-          <div>
-            <span>Correo</span>
-            <strong>{sessionUser?.email}</strong>
-          </div>
-          <div>
-            <span>Nombre de usuario</span>
-            <strong>{sessionUser?.username ?? 'Pendiente de asignación'}</strong>
-          </div>
-          <div>
-            <span>Documento</span>
-            <strong>{sessionUser?.document}</strong>
-          </div>
-          <div>
-            <span>Ciudad</span>
-            <strong>{municipalityName}</strong>
-          </div>
-          <div>
-            <span>Departamento</span>
-            <strong>{departmentName}</strong>
-          </div>
+        <div className="profile-card__notice">
+          <strong>Datos de cuenta</strong>
+          <span>
+            El documento, el correo y los consentimientos no se modifican desde esta pantalla.
+          </span>
         </div>
 
         {isEditing ? (
@@ -203,41 +213,6 @@ export function ProfilePage() {
               </div>
 
               <div className="autenticacion-campo">
-                <label htmlFor="profile-username">Nombre de usuario</label>
-                <input
-                  id="profile-username"
-                  className="autenticacion-control"
-                  autoComplete="username"
-                  aria-invalid={Boolean(errors.username)}
-                  aria-describedby={errors.username ? 'profile-username-error' : undefined}
-                  {...register('username')}
-                />
-                {errors.username ? (
-                  <small id="profile-username-error" className="form-field__error">
-                    {errors.username.message}
-                  </small>
-                ) : null}
-              </div>
-
-              <div className="autenticacion-campo">
-                <label htmlFor="profile-email">Correo</label>
-                <input
-                  id="profile-email"
-                  className="autenticacion-control"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'profile-email-error' : undefined}
-                  {...register('email')}
-                />
-                {errors.email ? (
-                  <small id="profile-email-error" className="form-field__error">
-                    {errors.email.message}
-                  </small>
-                ) : null}
-              </div>
-
-              <div className="autenticacion-campo">
                 <label htmlFor="profile-phone">Teléfono</label>
                 <input
                   id="profile-phone"
@@ -269,9 +244,9 @@ export function ProfilePage() {
                   }}
                 >
                   <option value="">Selecciona un departamento</option>
-                  {departmentCatalog.map((department) => (
-                    <option key={department.id} value={department.id}>
-                      {department.name}
+                  {getDepartmentOptions().map((department) => (
+                    <option key={department.value} value={department.value}>
+                      {department.label}
                     </option>
                   ))}
                 </select>
@@ -334,15 +309,15 @@ export function ProfilePage() {
             </div>
             <div>
               <span>Teléfono</span>
-              <strong>{sessionUser.phone}</strong>
+              <strong>{sessionUser.phone || 'Sin registrar'}</strong>
             </div>
             <div>
               <span>Ciudad</span>
-              <strong>{sessionUser.municipalityName}</strong>
+              <strong>{municipalityName}</strong>
             </div>
             <div>
               <span>Departamento</span>
-              <strong>{sessionUser.departmentName}</strong>
+              <strong>{departmentName}</strong>
             </div>
           </div>
         )}

@@ -45,6 +45,13 @@ function toVocationalResult(raw: BackendResultado): VocationalResult {
       url: programa.urlPrograma ?? undefined,
       pathLogo: programa.pathLogo ?? undefined,
     })),
+    areas: raw.afinidadPorArea.map((item) => ({
+      id: String(item.idArea),
+      name: item.nombreArea,
+      affinity: item.valorAfinidad,
+      description: item.perfil ?? '',
+      profile: item.descripcionArea ?? '',
+    })),
     affinityByArea: raw.afinidadPorArea.map((item) => ({
       label: item.nombreArea,
       value: item.valorAfinidad,
