@@ -25,3 +25,6 @@ dist-ssr
 
 # Mis carpetas ignoradas
 Documentos/
+
+# Variables de entorno local
+.env

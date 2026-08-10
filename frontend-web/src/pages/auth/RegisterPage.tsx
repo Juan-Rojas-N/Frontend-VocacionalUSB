@@ -6,7 +6,6 @@ import { z } from 'zod'
 import { PasswordField } from '../../components/common/PasswordField'
 import { InstitutionalModal } from '../../components/common/InstitutionalModal'
 import {
-  ACADEMIC_PROGRAM_GROUPS,
   APP_ROUTES,
   GENDER_OPTIONS,
   GENDER_OTHER_MAX_LENGTH,
@@ -18,7 +17,8 @@ import {
   SEMESTER_OPTIONS,
   USERNAME_MAX_LENGTH,
 } from '../../constants'
-import { MockValidationError } from '../../services/errors'
+import { ApiError } from '../../services/apiClient'
+import { catalogService } from '../../services/catalogService'
 import { useAuthStore } from '../../stores/authStore'
 import {
   getAdultBirthDateLimit,
@@ -27,12 +27,12 @@ import {
   getPasswordValidationError,
 } from '../../utils/authValidation'
 import {
+  getAcademicProgramOptionGroups,
   getDepartmentOptions,
   getMunicipalityOptions,
   isMunicipalityValidForDepartment,
 } from '../../utils/catalogs'
 
-const departmentOptions = getDepartmentOptions()
 const adultBirthDateLimit = getAdultBirthDateLimit()
 
 const registerSchema = z
@@ -155,6 +155,9 @@ export function RegisterPage() {
   const [pendingValues, setPendingValues] = useState<RegisterFormValues | null>(null)
   const [adultModalOpen, setAdultModalOpen] = useState(false)
   const [adultConfirmed, setAdultConfirmed] = useState(false)
+  const [catalogLoading, setCatalogLoading] = useState(true)
+  const [catalogError, setCatalogError] = useState('')
+  const [, setCatalogRefresh] = useState(0)
   const previousDepartmentId = useRef<string | undefined>(undefined)
 
   const {
@@ -162,7 +165,6 @@ export function RegisterPage() {
     handleSubmit,
     control,
     clearErrors,
-    setError,
     setValue,
     formState: { errors },
   } = useForm<RegisterFormValues>({
@@ -181,9 +183,63 @@ export function RegisterPage() {
   const departmentId = useWatch({ control, name: 'departmentId' })
   const municipalityId = useWatch({ control, name: 'municipalityId' })
 
-  const municipalityOptions = getMunicipalityOptions(departmentId)
+  const departmentOptions = getDepartmentOptions()
+  const municipalityOptions = departmentId ? getMunicipalityOptions(departmentId) : []
+  const programGroups = getAcademicProgramOptionGroups()
   const showAcademicFields =
     institutionLinkedChoice === 'Si' && institutionRelationship === 'Estudiante'
+
+  useEffect(() => {
+    let active = true
+
+    async function loadCatalogs() {
+      try {
+        await catalogService.loadAll()
+        if (active) {
+          setCatalogLoading(false)
+          setCatalogRefresh((value) => value + 1)
+        }
+      } catch {
+        if (active) {
+          setCatalogError('No se pudo cargar el catálogo de lugares y programas.')
+          setCatalogLoading(false)
+        }
+      }
+    }
+
+    void loadCatalogs()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!departmentId) {
+      return
+    }
+
+    let active = true
+
+    async function loadMunicipalities() {
+      try {
+        await catalogService.loadMunicipalities(departmentId)
+        if (active) {
+          setCatalogRefresh((value) => value + 1)
+        }
+      } catch {
+        if (active) {
+          setCatalogRefresh((value) => value + 1)
+        }
+      }
+    }
+
+    void loadMunicipalities()
+
+    return () => {
+      active = false
+    }
+  }, [departmentId])
 
   useEffect(() => {
     if (selectedGender !== 'Otro') {
@@ -279,10 +335,7 @@ export function RegisterPage() {
       setAdultModalOpen(false)
       navigate(APP_ROUTES.testIntro)
     } catch (error) {
-      if (error instanceof MockValidationError) {
-        for (const [field, message] of Object.entries(error.fieldErrors)) {
-          setError(field as keyof RegisterFormValues, { type: 'server', message })
-        }
+      if (error instanceof ApiError) {
         setErrorMessage(error.message)
       } else {
         setErrorMessage(error instanceof Error ? error.message : 'No se pudo registrar el usuario.')
@@ -413,8 +466,15 @@ export function RegisterPage() {
 
             <div className="autenticacion-campo">
               <label htmlFor="departmentId">Departamento</label>
-              <select id="departmentId" className="autenticacion-control" {...register('departmentId')}>
-                <option value="">-</option>
+              <select
+                id="departmentId"
+                className="autenticacion-control"
+                disabled={catalogLoading}
+                {...register('departmentId')}
+              >
+                <option value="">
+                  {catalogLoading ? 'Cargando departamentos...' : '-'}
+                </option>
                 {departmentOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -424,6 +484,7 @@ export function RegisterPage() {
               {errors.departmentId ? (
                 <small className="form-field__error">{errors.departmentId.message}</small>
               ) : null}
+              {catalogError ? <small className="form-field__error">{catalogError}</small> : null}
             </div>
 
             <div className="autenticacion-campo">
@@ -431,10 +492,13 @@ export function RegisterPage() {
               <select
                 id="municipalityId"
                 className="autenticacion-control"
-                disabled={!departmentId}
+                disabled={!departmentId || catalogLoading}
                 {...register('municipalityId')}
               >
                 <option value="">{departmentId ? '-' : 'Selecciona primero el departamento'}</option>
+                {departmentId && municipalityOptions.length === 0 && !catalogLoading ? (
+                  <option value="">Cargando ciudades...</option>
+                ) : null}
                 {municipalityOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -491,14 +555,15 @@ export function RegisterPage() {
                   <select
                     id="academicProgramId"
                     className="autenticacion-control"
+                    disabled={catalogLoading}
                     {...register('academicProgramId')}
                   >
                     <option value="">-</option>
-                    {ACADEMIC_PROGRAM_GROUPS.map((group) => (
+                    {programGroups.map((group) => (
                       <optgroup key={group.id} label={group.label}>
                         {group.programs.map((program) => (
-                          <option key={program.id} value={program.id}>
-                            {program.name}
+                          <option key={program.value} value={program.value}>
+                            {program.label}
                           </option>
                         ))}
                       </optgroup>

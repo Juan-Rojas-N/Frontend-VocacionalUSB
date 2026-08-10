@@ -87,6 +87,7 @@ export function TestReviewPage() {
         attemptId,
         submittedAt: new Date().toISOString(),
         answers,
+        questions,
       })
       isFinishingRef.current = true
       setConfirmationOpen(false)

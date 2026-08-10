@@ -1,22 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
-import { MockValidationError } from '../../services/errors'
+import { catalogService } from '../../services/catalogService'
 import { userService } from '../../services/userService'
 import { useAuthStore } from '../../stores/authStore'
 import type { UserProfile } from '../../types'
-import { departmentCatalog, getMunicipalitiesByDepartment } from '../../utils/catalogs'
+import {
+  getDepartmentDisplayName,
+  getDepartmentOptions,
+  getMunicipalityDisplayName,
+  getMunicipalitiesByDepartment,
+} from '../../utils/catalogs'
 
 const profileSchema = z.object({
   firstName: z.string().trim().min(2, 'Ingresa al menos 2 caracteres.'),
   lastName: z.string().trim().min(2, 'Ingresa al menos 2 caracteres.'),
-  username: z
-    .string()
-    .trim()
-    .min(3, 'El nombre de usuario debe tener al menos 3 caracteres.')
-    .max(50, 'El nombre de usuario no puede superar 50 caracteres.'),
-  email: z.email('Ingresa un correo válido.'),
   phone: z
     .string()
     .trim()
@@ -31,8 +30,6 @@ function toFormValues(profile: UserProfile): ProfileFormValues {
   return {
     firstName: profile.firstName,
     lastName: profile.lastName,
-    username: profile.username ?? '',
-    email: profile.email,
     phone: profile.phone,
     departmentId: profile.departmentId,
     municipalityId: profile.municipalityId,
@@ -48,12 +45,32 @@ export function ProfilePage() {
     null,
   )
 
+  useEffect(() => {
+    let active = true
+
+    async function loadCatalogs() {
+      try {
+        await catalogService.loadAll()
+        if (active && sessionUser?.departmentId) {
+          await catalogService.loadMunicipalities(sessionUser.departmentId)
+        }
+      } catch {
+        // Se conservan los nombres guardados en el perfil.
+      }
+    }
+
+    void loadCatalogs()
+
+    return () => {
+      active = false
+    }
+  }, [sessionUser?.departmentId])
+
   const {
     register,
     control,
     handleSubmit,
     reset,
-    setError,
     setValue,
     formState: { errors, isDirty },
   } = useForm<ProfileFormValues>({
@@ -63,8 +80,6 @@ export function ProfilePage() {
       : {
           firstName: '',
           lastName: '',
-          username: '',
-          email: '',
           phone: '',
           departmentId: '',
           municipalityId: '',
@@ -87,21 +102,18 @@ export function ProfilePage() {
     try {
       setIsSaving(true)
       setStatus(null)
-      const response = await userService.updateProfile(sessionUser.id, values)
-      updateSessionUser(response.data)
-      reset(toFormValues(response.data))
-      setIsEditing(false)
-      setStatus({
-        tone: 'success',
-        message: `${response.message ?? 'Perfil actualizado.'} La integración HTTP sigue pendiente.`,
+      const updated = await userService.updateProfile({
+        nombre: values.firstName,
+        apellidos: values.lastName,
+        telefono: values.phone,
+        departamento: values.departmentId,
+        municipio: values.municipalityId,
       })
+      updateSessionUser(updated)
+      reset(toFormValues(updated))
+      setIsEditing(false)
+      setStatus({ tone: 'success', message: 'Perfil actualizado correctamente.' })
     } catch (error) {
-      if (error instanceof MockValidationError) {
-        for (const [field, message] of Object.entries(error.fieldErrors)) {
-          setError(field as keyof ProfileFormValues, { type: 'server', message })
-        }
-      }
-
       setStatus({
         tone: 'error',
         message: error instanceof Error ? error.message : 'No fue posible actualizar el perfil.',
@@ -119,6 +131,16 @@ export function ProfilePage() {
     setIsEditing(false)
     setStatus(null)
   }
+
+  const departmentName = getDepartmentDisplayName(
+    sessionUser.departmentId,
+    sessionUser.departmentName,
+  )
+  const municipalityName = getMunicipalityDisplayName(
+    sessionUser.departmentId,
+    sessionUser.municipalityId,
+    sessionUser.municipalityName,
+  )
 
   return (
     <div className="profile-shell">
@@ -149,8 +171,7 @@ export function ProfilePage() {
         <div className="profile-card__notice">
           <strong>Datos de cuenta</strong>
           <span>
-            El documento y los consentimientos no se modifican desde esta pantalla. Los cambios se
-            guardan en un mock local hasta conectar el backend.
+            El documento, el correo y los consentimientos no se modifican desde esta pantalla.
           </span>
         </div>
 
@@ -192,41 +213,6 @@ export function ProfilePage() {
               </div>
 
               <div className="autenticacion-campo">
-                <label htmlFor="profile-username">Nombre de usuario</label>
-                <input
-                  id="profile-username"
-                  className="autenticacion-control"
-                  autoComplete="username"
-                  aria-invalid={Boolean(errors.username)}
-                  aria-describedby={errors.username ? 'profile-username-error' : undefined}
-                  {...register('username')}
-                />
-                {errors.username ? (
-                  <small id="profile-username-error" className="form-field__error">
-                    {errors.username.message}
-                  </small>
-                ) : null}
-              </div>
-
-              <div className="autenticacion-campo">
-                <label htmlFor="profile-email">Correo</label>
-                <input
-                  id="profile-email"
-                  className="autenticacion-control"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'profile-email-error' : undefined}
-                  {...register('email')}
-                />
-                {errors.email ? (
-                  <small id="profile-email-error" className="form-field__error">
-                    {errors.email.message}
-                  </small>
-                ) : null}
-              </div>
-
-              <div className="autenticacion-campo">
                 <label htmlFor="profile-phone">Teléfono</label>
                 <input
                   id="profile-phone"
@@ -258,9 +244,9 @@ export function ProfilePage() {
                   }}
                 >
                   <option value="">Selecciona un departamento</option>
-                  {departmentCatalog.map((department) => (
-                    <option key={department.id} value={department.id}>
-                      {department.name}
+                  {getDepartmentOptions().map((department) => (
+                    <option key={department.value} value={department.value}>
+                      {department.label}
                     </option>
                   ))}
                 </select>
@@ -323,15 +309,15 @@ export function ProfilePage() {
             </div>
             <div>
               <span>Teléfono</span>
-              <strong>{sessionUser.phone}</strong>
+              <strong>{sessionUser.phone || 'Sin registrar'}</strong>
             </div>
             <div>
               <span>Ciudad</span>
-              <strong>{sessionUser.municipalityName}</strong>
+              <strong>{municipalityName}</strong>
             </div>
             <div>
               <span>Departamento</span>
-              <strong>{sessionUser.departmentName}</strong>
+              <strong>{departmentName}</strong>
             </div>
           </div>
         )}
