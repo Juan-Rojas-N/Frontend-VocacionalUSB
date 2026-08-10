@@ -380,4 +380,6 @@ export interface AdminDashboard {
   geographicDistribution: GeographicDistributionItem[]
   affinityDistribution: ChartDatum[]
   recentResults: AdminResultRecord[]
+  internos: number
+  externos: number
 }

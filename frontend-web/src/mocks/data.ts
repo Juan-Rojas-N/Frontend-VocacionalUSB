@@ -372,6 +372,8 @@ export const mockAdminDashboard: AdminDashboard = {
     },
   ],
   mostSelectedArea: 'Ingeniería y tecnología',
+  internos: 685,
+  externos: 599,
   geographicDistribution: [
     { region: 'Bogotá D.C.', users: 387, completedTests: 290 },
     { region: 'Medellín', users: 156, completedTests: 110 },

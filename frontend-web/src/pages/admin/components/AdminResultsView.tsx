@@ -21,7 +21,7 @@ export function AdminResultsView({ cards }: AdminResultsViewProps) {
         <div>
           <span className="panel-administracion__eyebrow">Resultados</span>
           <h2>Resultados por individuo</h2>
-          <p>Vista lista para recibir el detalle consolidado desde el backend.</p>
+          <p>Últimos resultados consolidados desde el backend, con el programa sugerido y su afinidad.</p>
         </div>
       </div>
 

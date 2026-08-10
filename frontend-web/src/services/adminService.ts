@@ -1,12 +1,12 @@
-import { mockAdminCatalogs, mockAdminDashboard, storageKeys } from '../mocks/data'
+import { mockAdminCatalogs, storageKeys } from '../mocks/data'
 import type {
   AdminAreaCatalogItem,
   AdminCatalogs,
   AdminDashboard,
   AdminProgramCatalogItem,
   AdminReportFilters,
-  AdminResultRecord,
   AdminTestCatalogItem,
+  ApiEnvelope,
   RegisteredUserRecord,
   RoleActivity,
   RoleActivityAssignment,
@@ -222,21 +222,22 @@ async function persistProgramChanges(
   }
 }
 
+async function fetchDashboard(): Promise<ApiEnvelope<AdminDashboard>> {
+  return api.get<AdminDashboard>('/dashboard')
+}
+
 export const adminService = {
   async getDashboard() {
-    return simulateRequest<AdminDashboard>(
-      '/api/admin/dashboard',
-      () => mockAdminDashboard,
-      'Dashboard mock consultado.',
-    )
+    return fetchDashboard()
   },
 
   async getResults() {
-    return simulateRequest<AdminResultRecord[]>(
-      '/api/admin/results',
-      () => mockAdminDashboard.recentResults,
-      'Listado mock de resultados consultado.',
-    )
+    const response = await fetchDashboard()
+    return {
+      ...response,
+      data: response.data.recentResults,
+      endpoint: '/api/v1/dashboard',
+    }
   },
 
   async exportReport(

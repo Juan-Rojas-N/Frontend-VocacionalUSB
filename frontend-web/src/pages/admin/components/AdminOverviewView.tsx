@@ -56,13 +56,13 @@ export function AdminOverviewView({
           <div className="estadistica-administracion__donut-meta">
             <div>
               <span>Internos</span>
-              <strong>685</strong>
-              <small>Estudiantes activos</small>
+              <strong>{dashboard.internos ?? 0}</strong>
+              <small>Con programa de interés</small>
             </div>
             <div>
               <span>Externos</span>
-              <strong>420</strong>
-              <small>Aspirantes</small>
+              <strong>{dashboard.externos ?? 0}</strong>
+              <small>Sin programa asociado</small>
             </div>
           </div>
         </article>
@@ -70,18 +70,24 @@ export function AdminOverviewView({
         <article className="resumen-administracion__panel">
           <h3>Distribución geográfica</h3>
           <div className="estadistica-administracion__geografia">
-            {dashboard.geographicDistribution.map((item) => (
-              <div key={item.region} className="estadistica-administracion__geografia-fila">
-                <span>{item.region}</span>
-                <div className="estadistica-administracion__geografia-barra">
-                  <div
-                    className="estadistica-administracion__geografia-relleno"
-                    style={{ width: `${Math.min(100, (item.users / 387) * 100)}%` }}
-                  />
+            {dashboard.geographicDistribution.map((item) => {
+              const maxUsers = Math.max(
+                1,
+                ...dashboard.geographicDistribution.map((region) => region.users),
+              )
+              return (
+                <div key={item.region} className="estadistica-administracion__geografia-fila">
+                  <span>{item.region}</span>
+                  <div className="estadistica-administracion__geografia-barra">
+                    <div
+                      className="estadistica-administracion__geografia-relleno"
+                      style={{ width: `${Math.min(100, (item.users / maxUsers) * 100)}%` }}
+                    />
+                  </div>
+                  <strong>{item.users}</strong>
                 </div>
-                <strong>{item.users}</strong>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </article>
       </section>

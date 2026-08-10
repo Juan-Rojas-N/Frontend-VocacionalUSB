@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { mockResult } from '../../mocks/data'
 import { adminService } from '../../services/adminService'
 import { getUsers } from '../../services/authStorage'
 import { useAuthStore } from '../../stores/authStore'
@@ -13,7 +12,7 @@ import { RootRoleActivitiesView } from './components/RootRoleActivitiesView'
 import { RootUserRolesView } from './components/RootUserRolesView'
 
 type AdminView = 'overview' | 'results' | 'reports' | 'catalogs'
-type RootView = 'role-activities' | 'user-roles' | 'catalogs'
+type RootView = 'overview' | 'role-activities' | 'user-roles' | 'catalogs'
 type DashboardView = AdminView | RootView
 
 interface ResultCard {
@@ -36,6 +35,7 @@ const ADMIN_NAV_ITEMS: Array<{ id: AdminView; label: string }> = [
 ]
 
 const ROOT_NAV_ITEMS: Array<{ id: RootView; label: string }> = [
+  { id: 'overview', label: 'Resumen general' },
   { id: 'role-activities', label: 'Roles - Actividades' },
   { id: 'user-roles', label: 'Usuarios - Modificar rol' },
   { id: 'catalogs', label: 'Configuración' },
@@ -47,17 +47,11 @@ export function AdminDashboardPage() {
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null)
   const [rows, setRows] = useState<AdminResultRecord[]>([])
   const [dashboardError, setDashboardError] = useState('')
-  const [activeView, setActiveView] = useState<DashboardView>(() =>
-    sessionUser?.role === 'root' ? 'role-activities' : 'overview',
-  )
+  const [activeView, setActiveView] = useState<DashboardView>('overview')
   const [exportStatus, setExportStatus] = useState('')
   const [users] = useState(() => getUsers())
 
   useEffect(() => {
-    if (isRoot) {
-      return
-    }
-
     let active = true
     void Promise.all([adminService.getDashboard(), adminService.getResults()])
       .then(([dashboardResponse, rowsResponse]) => {
@@ -85,11 +79,15 @@ export function AdminDashboardPage() {
       userName: row.studentName,
       city: row.city,
       primaryArea: row.primaryArea,
-      programs: mockResult.careers.map((career) => ({
-        id: `${row.id}-${career.id}`,
-        name: career.name,
-        affinity: career.affinity,
-      })),
+      programs: row.topCareer
+        ? [
+            {
+              id: `${row.id}-career`,
+              name: row.topCareer,
+              affinity: row.affinity,
+            },
+          ]
+        : [],
     }))
   }, [rows])
 
@@ -109,7 +107,7 @@ export function AdminDashboardPage() {
     return <div className="loading-state">Cargando sesión...</div>
   }
 
-  if (!isRoot && dashboardError) {
+  if (dashboardError) {
     return (
       <div className="panel-administracion panel-administracion--state">
         <section className="admin-error-state" role="alert">
@@ -123,7 +121,7 @@ export function AdminDashboardPage() {
     )
   }
 
-  if (!isRoot && !dashboard) {
+  if (!dashboard) {
     return <div className="loading-state">Cargando panel administrativo...</div>
   }
 
@@ -163,7 +161,7 @@ export function AdminDashboardPage() {
 
         <div className="panel-administracion__contenido">
           <div className="panel-administracion__scroll">
-            {!isRoot && activeView === 'overview' && dashboard ? (
+            {activeView === 'overview' && dashboard ? (
               <AdminOverviewView
                 dashboard={dashboard}
                 rows={rows}
