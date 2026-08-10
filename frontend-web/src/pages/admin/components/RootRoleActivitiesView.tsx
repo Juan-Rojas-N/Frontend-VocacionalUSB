@@ -1,21 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
 import { adminService } from '../../../services/adminService'
-import type { RoleActivity, RoleActivityAssignment, UserRole } from '../../../types'
+import type { RoleActivity, RoleActivityAssignment } from '../../../types'
 
 type LoadState = 'loading' | 'ready' | 'error'
 
 export function RootRoleActivitiesView() {
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [assignments, setAssignments] = useState<RoleActivityAssignment[]>([])
-  const [selectedRole, setSelectedRole] = useState<UserRole>('administrator')
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null)
   const [draftActivities, setDraftActivities] = useState<RoleActivity[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   const selectedAssignment = useMemo(
-    () => assignments.find((assignment) => assignment.role === selectedRole) ?? null,
-    [assignments, selectedRole],
+    () => assignments.find((assignment) => assignment.roleId === selectedRoleId) ?? null,
+    [assignments, selectedRoleId],
   )
+  const isProtectedRole = selectedAssignment?.role === 'root'
 
   const hasPendingChanges = useMemo(() => {
     if (!selectedAssignment || draftActivities.length !== selectedAssignment.activities.length) {
@@ -40,10 +41,9 @@ export function RootRoleActivitiesView() {
         }
 
         setAssignments(response.data)
-        const initial =
-          response.data.find((assignment) => assignment.role === 'administrator') ?? response.data[0]
+        const initial = response.data[0]
         if (initial) {
-          setSelectedRole(initial.role)
+          setSelectedRoleId(initial.roleId)
           setDraftActivities(initial.activities.map((activity) => ({ ...activity })))
         }
         setLoadState('ready')
@@ -59,7 +59,7 @@ export function RootRoleActivitiesView() {
     }
   }, [])
 
-  function selectRole(role: UserRole) {
+  function selectRole(roleId: number) {
     if (
       hasPendingChanges &&
       !window.confirm('Hay cambios sin guardar. ¿Deseas descartarlos y cambiar de rol?')
@@ -67,13 +67,17 @@ export function RootRoleActivitiesView() {
       return
     }
 
-    const assignment = assignments.find((item) => item.role === role)
-    setSelectedRole(role)
+    const assignment = assignments.find((item) => item.roleId === roleId)
+    setSelectedRoleId(roleId)
     setDraftActivities(assignment?.activities.map((activity) => ({ ...activity })) ?? [])
     setStatus(null)
   }
 
   function toggleActivity(activityId: string) {
+    if (isProtectedRole) {
+      return
+    }
+
     setDraftActivities((current) =>
       current.map((activity) =>
         activity.id === activityId ? { ...activity, enabled: !activity.enabled } : activity,
@@ -83,20 +87,21 @@ export function RootRoleActivitiesView() {
   }
 
   async function saveChanges() {
+    if (selectedRoleId == null || isProtectedRole) {
+      return
+    }
+
     try {
       setIsSaving(true)
       setStatus(null)
-      const response = await adminService.saveRoleActivities(selectedRole, draftActivities)
+      const response = await adminService.saveRoleActivities(selectedRoleId, draftActivities)
       setAssignments((current) =>
         current.map((assignment) =>
-          assignment.role === selectedRole ? response.data : assignment,
+          assignment.roleId === selectedRoleId ? response.data : assignment,
         ),
       )
       setDraftActivities(response.data.activities.map((activity) => ({ ...activity })))
-      setStatus({
-        tone: 'success',
-        message: `${response.message ?? 'Cambios guardados.'} El backend debe autorizar esta operación.`,
-      })
+      setStatus({ tone: 'success', message: 'Permisos guardados y aplicados en el servidor.' })
     } catch (error) {
       setStatus({
         tone: 'error',
@@ -115,7 +120,7 @@ export function RootRoleActivitiesView() {
     return (
       <section className="seccion-administracion admin-error-state" role="alert">
         <h2>No fue posible cargar los permisos</h2>
-        <p>Recarga la página para intentar consultar nuevamente el mock local.</p>
+        <p>Verifica que el backend esté disponible y recarga la página para reintentar.</p>
       </section>
     )
   }
@@ -127,11 +132,10 @@ export function RootRoleActivitiesView() {
           <span className="panel-administracion__eyebrow">ROOT · Seguridad</span>
           <h2>Roles - Actividades</h2>
           <p>
-            Activa o desactiva actividades del rol seleccionado. Esta fase guarda únicamente en un
-            mock local.
+            Activa o desactiva actividades del rol seleccionado. Los cambios se guardan en el
+            servidor y se aplican de inmediato a la autorización por URL.
           </p>
         </div>
-        <span className="admin-mock-badge">Mock explícito</span>
       </div>
 
       {assignments.length === 0 ? (
@@ -143,11 +147,11 @@ export function RootRoleActivitiesView() {
               Rol
               <select
                 id="role-activities-role"
-                value={selectedRole}
-                onChange={(event) => selectRole(event.target.value as UserRole)}
+                value={selectedRoleId ?? ''}
+                onChange={(event) => selectRole(Number(event.target.value))}
               >
                 {assignments.map((assignment) => (
-                  <option key={assignment.role} value={assignment.role}>
+                  <option key={assignment.roleId} value={assignment.roleId}>
                     {assignment.roleLabel}
                   </option>
                 ))}
@@ -159,7 +163,13 @@ export function RootRoleActivitiesView() {
             </div>
           </div>
 
-          {draftActivities.length > 0 ? (
+          {isProtectedRole ? (
+            <div className="admin-empty-state">
+              El rol ROOT no permite modificar sus permisos desde esta pantalla.
+            </div>
+          ) : null}
+
+          {draftActivities.length > 0 && !isProtectedRole ? (
             <div className="role-activities__list">
               {draftActivities.map((activity) => (
                 <article key={activity.id} className="role-activities__item">
@@ -184,16 +194,16 @@ export function RootRoleActivitiesView() {
                 </article>
               ))}
             </div>
-          ) : (
+          ) : !isProtectedRole ? (
             <div className="admin-empty-state">Este rol no tiene actividades disponibles.</div>
-          )}
+          ) : null}
 
           <div className="admin-save-bar">
             <div>
               <strong>{hasPendingChanges ? 'Cambios pendientes' : 'Sin cambios pendientes'}</strong>
               <span>
                 {hasPendingChanges
-                  ? 'Guarda para confirmar el cambio en el mock local.'
+                  ? 'Guarda para confirmar el cambio en el servidor.'
                   : 'La configuración visible coincide con la última versión guardada.'}
               </span>
             </div>
@@ -201,7 +211,7 @@ export function RootRoleActivitiesView() {
               type="button"
               className="boton-principal"
               onClick={() => void saveChanges()}
-              disabled={!hasPendingChanges || isSaving}
+              disabled={!hasPendingChanges || isSaving || isProtectedRole}
             >
               {isSaving ? 'Guardando...' : 'Guardar cambios'}
             </button>

@@ -100,7 +100,20 @@ async function apiRequest<T>(
     throw await parseErrorResponse(response)
   }
 
-  const data = response.status === 204 ? (null as T) : ((await response.json()) as T)
+  let data: T = null as T
+  if (response.status !== 204) {
+    const text = await response.text()
+    if (text) {
+      try {
+        data = JSON.parse(text) as T
+      } catch {
+        throw new ApiError(
+          'El servidor respondió en un formato inesperado.',
+          response.status,
+        )
+      }
+    }
+  }
 
   return {
     data,

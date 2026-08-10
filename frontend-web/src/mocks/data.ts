@@ -445,11 +445,13 @@ function activitiesWithEnabledIds(enabledIds: string[]) {
 
 export const mockRoleActivityAssignments: RoleActivityAssignment[] = [
   {
+    roleId: 1,
     role: 'root',
     roleLabel: 'ROOT',
     activities: activitiesWithEnabledIds(baseMockActivities.map((activity) => activity.id)),
   },
   {
+    roleId: 2,
     role: 'administrator',
     roleLabel: 'ADMINISTRADOR',
     activities: activitiesWithEnabledIds([
@@ -460,6 +462,7 @@ export const mockRoleActivityAssignments: RoleActivityAssignment[] = [
     ]),
   },
   {
+    roleId: 3,
     role: 'student',
     roleLabel: 'USUARIO',
     activities: activitiesWithEnabledIds(['results-read']),

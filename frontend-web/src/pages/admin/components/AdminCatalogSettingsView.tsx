@@ -257,7 +257,7 @@ export function AdminCatalogSettingsView() {
     }
 
     const action = currentlyActive ? 'desactivar' : 'reactivar'
-    if (!window.confirm(`¿Deseas ${action} este registro en el borrador local?`)) {
+    if (!window.confirm(`¿Deseas ${action} este registro? El cambio se aplica al servidor al guardar.`)) {
       return
     }
 
@@ -287,20 +287,20 @@ export function AdminCatalogSettingsView() {
   }
 
   async function saveCatalogChanges() {
-    if (!catalogs) {
+    if (!catalogs || !savedCatalogs) {
       return
     }
 
     try {
       setIsSaving(true)
       setStatus(null)
-      const response = await adminService.saveCatalogs(catalogs)
+      const response = await adminService.saveCatalogs(catalogs, savedCatalogs)
       const saved = cloneCatalogs(response.data)
       setSavedCatalogs(saved)
       setCatalogs(cloneCatalogs(saved))
       setStatus({
         tone: 'success',
-        message: `${response.message ?? 'Cambios guardados.'} No existe contrato backend confirmado para este CRUD.`,
+        message: 'Cambios guardados y enviados al servidor.',
       })
     } catch (error) {
       setStatus({
@@ -332,11 +332,10 @@ export function AdminCatalogSettingsView() {
           <span className="panel-administracion__eyebrow">Administrador · Configuración</span>
           <h2>Área - Programas - Prueba</h2>
           <p>
-            CRUD frontend con confirmación y guardado mock. La entidad “Prueba” es una propuesta de
-            configuración porque el SQL actual modela intentos, no definiciones de prueba.
+            Áreas y programas se gestionan contra el backend. La pestaña “Prueba” se mantiene como
+            propuesta local porque el backend modela intentos, no definiciones de prueba.
           </p>
         </div>
-        <span className="admin-mock-badge">Mock explícito</span>
       </div>
 
       <div className="admin-catalog-tabs" role="tablist" aria-label="Catálogos administrativos">

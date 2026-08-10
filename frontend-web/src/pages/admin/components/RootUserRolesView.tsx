@@ -1,18 +1,43 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { adminService } from '../../../services/adminService'
-import { getUsers } from '../../../services/authStorage'
 import { useAuthStore } from '../../../stores/authStore'
 import type { RegisteredUserRecord, UserRole } from '../../../types'
 import { getUserRoleLabel, USER_ROLE_OPTIONS } from '../../../utils/roles'
 
+type LoadState = 'loading' | 'ready' | 'error'
+
 export function RootUserRolesView() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
-  const [users, setUsers] = useState<RegisteredUserRecord[]>(() => getUsers())
-  const [draftRoles, setDraftRoles] = useState<Record<string, UserRole>>(() =>
-    Object.fromEntries(getUsers().map((user) => [user.id, user.role])),
-  )
+  const [loadState, setLoadState] = useState<LoadState>('loading')
+  const [users, setUsers] = useState<RegisteredUserRecord[]>([])
+  const [draftRoles, setDraftRoles] = useState<Record<string, UserRole>>({})
   const [savingUserId, setSavingUserId] = useState<string | null>(null)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    void adminService
+      .getAdminUsers()
+      .then((response) => {
+        if (!active) {
+          return
+        }
+
+        setUsers(response.data)
+        setDraftRoles(Object.fromEntries(response.data.map((user) => [user.id, user.role])))
+        setLoadState('ready')
+      })
+      .catch(() => {
+        if (active) {
+          setLoadState('error')
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const pendingCount = useMemo(
     () => users.filter((user) => draftRoles[user.id] !== user.role).length,
@@ -32,10 +57,7 @@ export function RootUserRolesView() {
       setUsers((current) =>
         current.map((item) => (item.id === user.id ? { ...item, role: response.data.role } : item)),
       )
-      setStatus({
-        tone: 'success',
-        message: `${response.message ?? 'Rol actualizado.'} El backend sigue siendo responsable de autorizar cada operación.`,
-      })
+      setStatus({ tone: 'success', message: 'Rol actualizado en el servidor.' })
     } catch (error) {
       setStatus({
         tone: 'error',
@@ -44,6 +66,19 @@ export function RootUserRolesView() {
     } finally {
       setSavingUserId(null)
     }
+  }
+
+  if (loadState === 'loading') {
+    return <div className="loading-state">Cargando usuarios...</div>
+  }
+
+  if (loadState === 'error') {
+    return (
+      <section className="seccion-administracion admin-error-state" role="alert">
+        <h2>No fue posible cargar los usuarios</h2>
+        <p>Verifica que el backend esté disponible y recarga la página para reintentar.</p>
+      </section>
+    )
   }
 
   return (
@@ -117,7 +152,7 @@ export function RootUserRolesView() {
                   {isCurrentUser ? (
                     <small>No puedes cambiar tu propio rol durante la sesión activa.</small>
                   ) : hasPendingChange ? (
-                    <small>Cambio local pendiente de guardar.</small>
+                    <small>Cambio pendiente de guardar.</small>
                   ) : null}
                 </div>
               </article>

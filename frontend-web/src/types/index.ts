@@ -303,6 +303,7 @@ export interface RoleActivity {
 }
 
 export interface RoleActivityAssignment {
+  roleId: number
   role: UserRole
   roleLabel: string
   activities: RoleActivity[]
