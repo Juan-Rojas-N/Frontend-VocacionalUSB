@@ -51,7 +51,7 @@ export function mapBackendUser(raw: BackendUsuarioResponse): UserProfile {
 
   return {
     id: raw.id != null ? String(raw.id) : `usr-${crypto.randomUUID()}`,
-    role: raw.idRol <= 2 ? 'administrator' : 'student',
+    role: raw.idRol === 1 ? 'root' : raw.idRol === 2 ? 'administrator' : 'student',
     fullName: `${firstName} ${lastName}`.trim(),
     firstName,
     lastName,

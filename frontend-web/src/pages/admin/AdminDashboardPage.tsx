@@ -13,7 +13,7 @@ import { RootRoleActivitiesView } from './components/RootRoleActivitiesView'
 import { RootUserRolesView } from './components/RootUserRolesView'
 
 type AdminView = 'overview' | 'results' | 'reports' | 'catalogs'
-type RootView = 'role-activities' | 'user-roles'
+type RootView = 'role-activities' | 'user-roles' | 'catalogs'
 type DashboardView = AdminView | RootView
 
 interface ResultCard {
@@ -38,6 +38,7 @@ const ADMIN_NAV_ITEMS: Array<{ id: AdminView; label: string }> = [
 const ROOT_NAV_ITEMS: Array<{ id: RootView; label: string }> = [
   { id: 'role-activities', label: 'Roles - Actividades' },
   { id: 'user-roles', label: 'Usuarios - Modificar rol' },
+  { id: 'catalogs', label: 'Configuración' },
 ]
 
 export function AdminDashboardPage() {
@@ -177,7 +178,7 @@ export function AdminDashboardPage() {
 
             {!isRoot && activeView === 'reports' ? <AdminReportsView users={users} /> : null}
 
-            {!isRoot && activeView === 'catalogs' ? <AdminCatalogSettingsView /> : null}
+            {activeView === 'catalogs' ? <AdminCatalogSettingsView /> : null}
 
             {isRoot && activeView === 'role-activities' ? <RootRoleActivitiesView /> : null}
 
