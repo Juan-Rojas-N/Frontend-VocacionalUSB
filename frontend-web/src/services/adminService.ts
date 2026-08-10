@@ -4,6 +4,9 @@ import type {
   AdminCatalogs,
   AdminDashboard,
   AdminProgramCatalogItem,
+  AdminReportDataset,
+  AdminReportProgramOption,
+  AdminReportRow,
   AdminReportFilters,
   AdminTestCatalogItem,
   ApiEnvelope,
@@ -42,6 +45,47 @@ interface BackendProgramaResponse {
   descripcionPrograma?: string | null
   urlPrograma?: string | null
   idArea: number
+}
+
+interface BackendDepartamento {
+  idDepartamento: string
+  nombreDepartamento: string
+}
+
+interface BackendAreaProgramas {
+  id: number
+  nombreArea: string
+  programas: Array<{ id: number; nombrePrograma: string }>
+}
+
+interface BackendPruebaResponse {
+  id: number | null
+  fecha: string | null
+  tiempoInvertido: number | null
+  versionPrueba: string | null
+  satisfaccion: number | null
+  activo: boolean
+}
+
+interface BackendResultadoResponse {
+  idPrueba: number
+  fecha: string | null
+  idAreaPredominante: number
+  nombreAreaPredominante: string
+  perfil?: string | null
+  descripcionArea?: string | null
+  afinidadPorArea: Array<{
+    idArea: number
+    nombreArea: string
+    valorAfinidad: number
+  }>
+  programasRecomendados: Array<{
+    idPrograma: number
+    nombrePrograma: string
+    valorAfinidad: number
+  }>
+  nombreReporte: string
+  url?: string | null
 }
 
 const ROLE_NAME_TO_ROLE: Record<string, UserRole> = {
@@ -253,6 +297,100 @@ export const adminService = {
       }),
       'Exportación mock preparada.',
     )
+  },
+
+  async getReportsDataset(): Promise<{
+    data: AdminReportDataset
+    endpoint: string
+    mocked: boolean
+    requestedAt: string
+  }> {
+    const [usersResponse, departmentsResponse, programsResponse] = await Promise.all([
+      api.get<BackendUsuarioResponse[]>('/usuarios'),
+      api.get<BackendDepartamento[]>('/departamentos').catch(() => null),
+      api.get<BackendAreaProgramas[]>('/catalogos/programas').catch(() => null),
+    ])
+
+    const departmentNames = new Map<string, string>()
+    for (const department of departmentsResponse?.data ?? []) {
+      departmentNames.set(String(department.idDepartamento), department.nombreDepartamento)
+    }
+
+    const programs: AdminReportProgramOption[] = []
+    for (const area of programsResponse?.data ?? []) {
+      for (const program of area.programas) {
+        programs.push({
+          id: String(program.id),
+          name: program.nombrePrograma,
+          areaName: area.nombreArea,
+        })
+      }
+    }
+
+    const users = usersResponse.data.filter((user) => user.id != null && user.estado)
+
+    const nestedRows = await Promise.all(
+      users.map(async (user) => {
+        try {
+          const pruebasResponse = await api.get<BackendPruebaResponse[]>(
+            `/usuarios/${user.id}/pruebas`,
+          )
+
+          const rowsForUser: AdminReportRow[] = []
+          for (const prueba of pruebasResponse.data) {
+            if (!prueba.activo || prueba.id == null) {
+              continue
+            }
+
+            const resultado = await api
+              .get<BackendResultadoResponse>(`/pruebas/${prueba.id}/resultado`)
+              .catch(() => null)
+            if (!resultado?.data) {
+              continue
+            }
+
+            const top = resultado.data.programasRecomendados[0]
+            rowsForUser.push({
+              userId: String(user.id),
+              studentName: `${user.nombre} ${user.apellidos}`.trim(),
+              document: user.documento,
+              email: user.correo,
+              departmentId: user.departamento ?? null,
+              departmentName: user.departamento
+                ? departmentNames.get(String(user.departamento)) ?? 'Sin región'
+                : 'Sin región',
+              isInterno: user.idPrograma != null,
+              testId: String(prueba.id),
+              completedAt: resultado.data.fecha ?? prueba.fecha ?? '',
+              primaryArea: resultado.data.nombreAreaPredominante,
+              topCareerId: top?.idPrograma ?? null,
+              topCareer: top?.nombrePrograma ?? 'Sin programa',
+              affinity: top?.valorAfinidad ?? 0,
+              satisfaction: prueba.satisfaccion ?? null,
+            })
+          }
+
+          return rowsForUser
+        } catch {
+          return []
+        }
+      }),
+    )
+
+    const rows = nestedRows
+      .flat()
+      .sort((left, right) => right.completedAt.localeCompare(left.completedAt))
+
+    return {
+      data: {
+        rows,
+        programs: programs.sort((left, right) => left.name.localeCompare(right.name, 'es')),
+        loadedAt: new Date().toISOString(),
+      },
+      endpoint: '/api/v1/usuarios',
+      mocked: false,
+      requestedAt: new Date().toISOString(),
+    }
   },
 
   async getRoleActivityAssignments(): Promise<{

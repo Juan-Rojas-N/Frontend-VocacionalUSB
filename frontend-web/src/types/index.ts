@@ -383,3 +383,44 @@ export interface AdminDashboard {
   internos: number
   externos: number
 }
+
+export interface AdminReportProgramOption {
+  id: string
+  name: string
+  areaName?: string
+}
+
+export interface AdminReportRow {
+  userId: string
+  studentName: string
+  document: string
+  email: string
+  departmentId: string | null
+  departmentName: string
+  isInterno: boolean
+  testId: string
+  completedAt: string
+  primaryArea: string
+  topCareerId: number | null
+  topCareer: string
+  affinity: number
+  satisfaction: number | null
+}
+
+export interface AdminReportDataset {
+  rows: AdminReportRow[]
+  programs: AdminReportProgramOption[]
+  loadedAt: string
+}
+
+export interface AdminReportStats {
+  totalResults: number
+  totalStudents: number
+  averageAffinity: number
+  topArea: string
+  byArea: Array<{ name: string; count: number }>
+  byCareer: Array<{ name: string; count: number; avgAffinity: number }>
+  byDepartment: Array<{ name: string; count: number }>
+  internos: number
+  externos: number
+}

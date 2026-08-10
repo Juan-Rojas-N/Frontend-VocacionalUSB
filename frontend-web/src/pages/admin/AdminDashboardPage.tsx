@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { adminService } from '../../services/adminService'
-import { getUsers } from '../../services/authStorage'
 import { useAuthStore } from '../../stores/authStore'
 import type { AdminDashboard, AdminResultRecord } from '../../types'
 import { getUserRoleLabel } from '../../utils/roles'
@@ -49,7 +48,6 @@ export function AdminDashboardPage() {
   const [dashboardError, setDashboardError] = useState('')
   const [activeView, setActiveView] = useState<DashboardView>('overview')
   const [exportStatus, setExportStatus] = useState('')
-  const [users] = useState(() => getUsers())
 
   useEffect(() => {
     let active = true
@@ -174,7 +172,7 @@ export function AdminDashboardPage() {
               <AdminResultsView cards={resultCards} />
             ) : null}
 
-            {!isRoot && activeView === 'reports' ? <AdminReportsView users={users} /> : null}
+            {!isRoot && activeView === 'reports' ? <AdminReportsView /> : null}
 
             {activeView === 'catalogs' ? <AdminCatalogSettingsView /> : null}
 
