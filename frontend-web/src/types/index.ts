@@ -30,6 +30,7 @@ export interface AcademicProgram {
   areaId: string
   areaName: string
   active: boolean
+  url?: string | null
 }
 
 export interface AcademicProgramGroup {

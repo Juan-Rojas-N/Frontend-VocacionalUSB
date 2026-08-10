@@ -24,6 +24,7 @@ interface BackendMunicipio {
 interface BackendProgramaCatalogo {
   id: number
   nombrePrograma: string
+  urlPrograma?: string | null
 }
 
 interface BackendAreaProgramas {
@@ -63,6 +64,7 @@ function toAcademicProgramGroup(area: BackendAreaProgramas): AcademicProgramGrou
       areaId: String(area.id),
       areaName: area.nombreArea,
       active: true,
+      url: programa.urlPrograma ?? null,
     })),
   }
 }

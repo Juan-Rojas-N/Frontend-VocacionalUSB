@@ -27,8 +27,8 @@ import {
   getPasswordValidationError,
 } from '../../utils/authValidation'
 import {
-  getAcademicProgramOptionGroups,
   getDepartmentOptions,
+  getInstitutionalAcademicProgramOptionGroups,
   getMunicipalityOptions,
   isMunicipalityValidForDepartment,
 } from '../../utils/catalogs'
@@ -185,7 +185,7 @@ export function RegisterPage() {
 
   const departmentOptions = getDepartmentOptions()
   const municipalityOptions = departmentId ? getMunicipalityOptions(departmentId) : []
-  const programGroups = getAcademicProgramOptionGroups()
+  const programGroups = getInstitutionalAcademicProgramOptionGroups()
   const showAcademicFields =
     institutionLinkedChoice === 'Si' && institutionRelationship === 'Estudiante'
 
@@ -569,6 +569,11 @@ export function RegisterPage() {
                       </optgroup>
                     ))}
                   </select>
+                  {!catalogLoading && programGroups.length === 0 ? (
+                    <small className="form-field__error">
+                      No se encontraron programas de la Universidad de San Buenaventura.
+                    </small>
+                  ) : null}
                   {errors.academicProgramId ? (
                     <small className="form-field__error">{errors.academicProgramId.message}</small>
                   ) : null}

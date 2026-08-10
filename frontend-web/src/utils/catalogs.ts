@@ -156,6 +156,21 @@ export function getAcademicProgramOptionGroups() {
   }))
 }
 
+export function getInstitutionalAcademicProgramOptionGroups() {
+  return academicProgramGroups
+    .map((group) => ({
+      id: group.id,
+      label: group.label,
+      programs: group.programs
+        .filter((program) => Boolean(program.url))
+        .map((program) => ({
+          value: program.id,
+          label: program.name,
+        })),
+    }))
+    .filter((group) => group.programs.length > 0)
+}
+
 export function resolveAcademicProgram(programId?: string | null): AcademicProgram | undefined {
   return findAcademicProgramById(programId)
 }
