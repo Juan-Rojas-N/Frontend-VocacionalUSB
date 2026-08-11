@@ -10,16 +10,23 @@ import type {
 let departmentCatalog: DepartmentCatalogItem[] =
   colombiaCatalog.departments as DepartmentCatalogItem[]
 
+const pendingMunicipalities = new Map<string, MunicipalityCatalogItem[]>()
+
 let academicProgramGroups: AcademicProgramGroup[] = ACADEMIC_PROGRAM_GROUPS
 
 export function setDepartmentCatalog(items: DepartmentCatalogItem[]) {
-  departmentCatalog = items
+  departmentCatalog = items.map((department) => ({
+    ...department,
+    municipalities:
+      pendingMunicipalities.get(department.id) ?? department.municipalities,
+  }))
 }
 
 export function setDepartmentMunicipalities(
   departmentId: string,
   municipalities: MunicipalityCatalogItem[],
 ) {
+  pendingMunicipalities.set(departmentId, municipalities)
   departmentCatalog = departmentCatalog.map((department) =>
     department.id === departmentId ? { ...department, municipalities } : department,
   )

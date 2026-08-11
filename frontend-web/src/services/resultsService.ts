@@ -114,4 +114,12 @@ export const resultsService = {
       data: toVocationalResult(resultResponse.data),
     }
   },
+
+  async getResultByTest(testId: string) {
+    const resultResponse = await api.get<BackendResultado>(`/pruebas/${testId}/resultado`)
+    return {
+      ...resultResponse,
+      data: toVocationalResult(resultResponse.data),
+    }
+  },
 }

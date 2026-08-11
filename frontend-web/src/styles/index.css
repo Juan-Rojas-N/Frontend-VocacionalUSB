@@ -3789,6 +3789,32 @@ button {
   font-weight: 700;
 }
 
+.resultados-administracion__area-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.resultados-administracion__ver-resultado {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid #ef7d00;
+  border-radius: 999px;
+  background: #fff;
+  color: #ef7d00;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.resultados-administracion__ver-resultado:hover {
+  background: #ef7d00;
+  color: #fff;
+}
+
 .resultados-administracion__programas {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4503,7 +4529,7 @@ input:disabled {
 }
 
 .carreras-recomendadas__tarjeta {
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr) 250px;
 }
 
 .carreras-recomendadas__details {

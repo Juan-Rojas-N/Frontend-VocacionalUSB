@@ -92,6 +92,10 @@ export const router = createBrowserRouter(
             { path: APP_ROUTES.testSession, element: withSuspense(<TestQuestionPage />) },
             { path: APP_ROUTES.testReview, element: withSuspense(<TestReviewPage />) },
             { path: APP_ROUTES.results, element: withSuspense(<ResultsPage />) },
+            {
+              path: `${APP_ROUTES.results}/:testId`,
+              element: withSuspense(<ResultsPage />),
+            },
           ],
         },
         {

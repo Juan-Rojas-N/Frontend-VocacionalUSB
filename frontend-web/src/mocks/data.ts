@@ -399,6 +399,11 @@ export const mockAdminDashboard: AdminDashboard = {
       primaryArea: 'Ingeniería y tecnología',
       topCareer: 'Ingeniería de Sistemas',
       affinity: 92,
+      programs: [
+        { idPrograma: 1, nombrePrograma: 'Ingeniería de Sistemas', valorAfinidad: 92 },
+        { idPrograma: 2, nombrePrograma: 'Ingeniería Civil', valorAfinidad: 88 },
+        { idPrograma: 3, nombrePrograma: 'Ingeniería Ambiental', valorAfinidad: 81 },
+      ],
       completedAt: '2026-06-19T18:40:00.000Z',
     },
     {
@@ -409,6 +414,11 @@ export const mockAdminDashboard: AdminDashboard = {
       primaryArea: 'Arte y comunicación',
       topCareer: 'Comunicación Social',
       affinity: 87,
+      programs: [
+        { idPrograma: 4, nombrePrograma: 'Comunicación Social', valorAfinidad: 87 },
+        { idPrograma: 5, nombrePrograma: 'Publicidad', valorAfinidad: 84 },
+        { idPrograma: 6, nombrePrograma: 'Periodismo', valorAfinidad: 79 },
+      ],
       completedAt: '2026-06-19T16:20:00.000Z',
     },
     {
@@ -419,6 +429,11 @@ export const mockAdminDashboard: AdminDashboard = {
       primaryArea: 'Ciencias sociales',
       topCareer: 'Psicología',
       affinity: 89,
+      programs: [
+        { idPrograma: 7, nombrePrograma: 'Psicología', valorAfinidad: 89 },
+        { idPrograma: 8, nombrePrograma: 'Trabajo Social', valorAfinidad: 82 },
+        { idPrograma: 9, nombrePrograma: 'Sociología', valorAfinidad: 74 },
+      ],
       completedAt: '2026-06-19T11:05:00.000Z',
     },
   ],

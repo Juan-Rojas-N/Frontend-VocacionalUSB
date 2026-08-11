@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { catalogService } from '../../services/catalogService'
@@ -21,7 +21,7 @@ const profileSchema = z.object({
     .trim()
     .regex(/^\+?[0-9 ]{7,16}$/, 'Ingresa un teléfono válido.'),
   departmentId: z.string().min(1, 'Selecciona un departamento.'),
-  municipalityId: z.string().min(1, 'Selecciona una ciudad.'),
+  municipalityId: z.string().min(1, 'Selecciona un municipio.'),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
@@ -44,6 +44,7 @@ export function ProfilePage() {
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null,
   )
+  const [, forceRender] = useReducer((value: number) => value + 1, 0)
 
   useEffect(() => {
     let active = true
@@ -56,6 +57,10 @@ export function ProfilePage() {
         }
       } catch {
         // Se conservan los nombres guardados en el perfil.
+      } finally {
+        if (active) {
+          forceRender()
+        }
       }
     }
 
@@ -87,10 +92,33 @@ export function ProfilePage() {
   })
 
   const departmentId = useWatch({ control, name: 'departmentId' })
-  const municipalities = useMemo(
-    () => getMunicipalitiesByDepartment(departmentId),
-    [departmentId],
-  )
+  const municipalities = getMunicipalitiesByDepartment(departmentId)
+
+  useEffect(() => {
+    if (!departmentId) {
+      return
+    }
+
+    let active = true
+
+    async function loadMunicipalities() {
+      try {
+        await catalogService.loadMunicipalities(departmentId)
+      } catch {
+        // Se conservan los municipios ya cargados.
+      } finally {
+        if (active) {
+          forceRender()
+        }
+      }
+    }
+
+    void loadMunicipalities()
+
+    return () => {
+      active = false
+    }
+  }, [departmentId])
 
   if (!sessionUser) {
     return <div className="loading-state">Cargando perfil...</div>
@@ -258,7 +286,7 @@ export function ProfilePage() {
               </div>
 
               <div className="autenticacion-campo">
-                <label htmlFor="profile-municipality">Ciudad</label>
+                <label htmlFor="profile-municipality">Municipio</label>
                 <select
                   id="profile-municipality"
                   className="autenticacion-control"
@@ -269,7 +297,7 @@ export function ProfilePage() {
                   }
                   {...register('municipalityId')}
                 >
-                  <option value="">Selecciona una ciudad</option>
+                  <option value="">Selecciona un municipio</option>
                   {municipalities.map((municipality) => (
                     <option key={municipality.id} value={municipality.id}>
                       {municipality.name}
@@ -312,7 +340,7 @@ export function ProfilePage() {
               <strong>{sessionUser.phone || 'Sin registrar'}</strong>
             </div>
             <div>
-              <span>Ciudad</span>
+              <span>Municipio</span>
               <strong>{municipalityName}</strong>
             </div>
             <div>

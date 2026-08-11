@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { ResultCharts } from '../../components/charts/ResultCharts'
 import { generateResultPdf } from '../../services/pdfService'
 import { resultsService } from '../../services/resultsService'
@@ -8,14 +9,20 @@ import { formatDate, formatPercentage } from '../../utils/formatters'
 
 export function ResultsPage() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
+  const { testId } = useParams<{ testId: string }>()
+  const [searchParams] = useSearchParams()
+  const studentName = searchParams.get('student')
   const [data, setData] = useState<VocationalResult | null>(null)
   const [selectedArea, setSelectedArea] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
-    void resultsService
-      .getMyResults()
+    const loadResult = testId
+      ? resultsService.getResultByTest(testId)
+      : resultsService.getMyResults()
+
+    void loadResult
       .then((response) => {
         setData(response.data)
         setSelectedArea(response.data.primaryArea)
@@ -26,7 +33,7 @@ export function ResultsPage() {
           error instanceof Error ? error.message : 'No fue posible consultar tus resultados.',
         )
       })
-  }, [])
+  }, [testId])
 
   const topCareer = useMemo(() => {
     if (!data) {
@@ -58,7 +65,10 @@ export function ResultsPage() {
     }
 
     try {
-      const fileName = generateResultPdf(data, sessionUser?.fullName ?? 'Estudiante USB')
+      const fileName = generateResultPdf(
+        data,
+        studentName ?? sessionUser?.fullName ?? 'Estudiante USB',
+      )
       setStatusMessage(`Informe generado: ${fileName}`)
     } catch (error) {
       setStatusMessage(
@@ -72,10 +82,12 @@ export function ResultsPage() {
       <div className="resultado-vocacional">
         <section className="resultado-vocacional__panel">
           <header className="resultado-vocacional__encabezado">
-            <h1>Resultados de tu prueba vocacional</h1>
+            <h1>
+              {testId ? 'Resultado de la prueba del estudiante' : 'Resultados de tu prueba vocacional'}
+            </h1>
           </header>
           <div className="introduccion-prueba__alerta">
-            <strong>No fue posible consultar tus resultados.</strong>
+            <strong>No fue posible consultar los resultados.</strong>
             <p>{errorMessage}</p>
           </div>
         </section>
@@ -91,7 +103,9 @@ export function ResultsPage() {
     <div className="resultado-vocacional">
       <section className="resultado-vocacional__panel">
         <header className="resultado-vocacional__encabezado">
-          <h1>Resultados de tu prueba vocacional</h1>
+          <h1>
+            {testId ? 'Resultado de la prueba del estudiante' : 'Resultados de tu prueba vocacional'}
+          </h1>
         </header>
 
         <section className="perfil-vocacional">
@@ -114,7 +128,7 @@ export function ResultsPage() {
             <p>{data.qualitativeSummary}</p>
           </div>
           <div className="perfil-vocacional__usuario">
-            <strong>{sessionUser?.fullName ?? 'Nombre Usuario'}</strong>
+            <strong>{studentName ?? sessionUser?.fullName ?? 'Nombre Usuario'}</strong>
             <span>Tu perfil presenta mayor afinidad con:</span>
           </div>
         </section>

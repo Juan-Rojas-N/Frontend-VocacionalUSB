@@ -74,21 +74,32 @@ export function AdminDashboardPage() {
   }, [isRoot])
 
   const resultCards = useMemo<ResultCard[]>(() => {
-    return rows.map((row) => ({
-      id: row.id,
-      userName: row.studentName,
-      city: row.city,
-      primaryArea: row.primaryArea,
-      programs: row.topCareer
-        ? [
-            {
-              id: `${row.id}-career`,
-              name: row.topCareer,
-              affinity: row.affinity,
-            },
-          ]
-        : [],
-    }))
+    return rows.map((row) => {
+      const programs = (row.programs?.length ? row.programs : []).map((program) => ({
+        id: program.id,
+        name: program.name,
+        affinity: program.affinity,
+      }))
+
+      return {
+        id: row.id,
+        userName: row.studentName,
+        city: row.city,
+        primaryArea: row.primaryArea,
+        programs:
+          programs.length > 0
+            ? programs
+            : row.topCareer
+              ? [
+                  {
+                    id: `${row.id}-career`,
+                    name: row.topCareer,
+                    affinity: row.affinity,
+                  },
+                ]
+              : [],
+      }
+    })
   }, [rows])
 
   function handleOverviewExport(format: 'pdf' | 'csv') {

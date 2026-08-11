@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router-dom'
+import { APP_ROUTES } from '../../../constants'
+
 interface ResultCard {
   id: string
   userName: string
@@ -15,6 +18,8 @@ interface AdminResultsViewProps {
 }
 
 export function AdminResultsView({ cards }: AdminResultsViewProps) {
+  const navigate = useNavigate()
+
   return (
     <section className="seccion-administracion">
       <div className="seccion-administracion__encabezado">
@@ -34,7 +39,20 @@ export function AdminResultsView({ cards }: AdminResultsViewProps) {
                   <strong>{card.userName}</strong>
                   <span>{card.city}</span>
                 </div>
-                <div className="resultados-administracion__area">{card.primaryArea}</div>
+                <div className="resultados-administracion__area-acciones">
+                  <div className="resultados-administracion__area">{card.primaryArea}</div>
+                  <button
+                    type="button"
+                    className="resultados-administracion__ver-resultado"
+                    onClick={() =>
+                      navigate(
+                        `${APP_ROUTES.results}/${card.id}?student=${encodeURIComponent(card.userName)}`,
+                      )
+                    }
+                  >
+                    Ver resultado
+                  </button>
+                </div>
               </div>
               <div className="resultados-administracion__programas">
                 {card.programs.slice(0, 3).map((program, index) => (

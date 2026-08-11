@@ -8,6 +8,7 @@ import type {
   AdminReportProgramOption,
   AdminReportRow,
   AdminReportFilters,
+  AdminResultRecord,
   AdminTestCatalogItem,
   ApiEnvelope,
   RegisteredUserRecord,
@@ -279,7 +280,15 @@ export const adminService = {
     const response = await fetchDashboard()
     return {
       ...response,
-      data: response.data.recentResults,
+      data: (response.data.recentResults ?? []).map((result) => ({
+        ...result,
+        primaryArea: result.primaryArea as AdminResultRecord['primaryArea'],
+        programs: (result.programs ?? []).map((program) => ({
+          id: String(program.idPrograma),
+          name: program.nombrePrograma,
+          affinity: program.valorAfinidad,
+        })),
+      })),
       endpoint: '/api/v1/dashboard',
     }
   },

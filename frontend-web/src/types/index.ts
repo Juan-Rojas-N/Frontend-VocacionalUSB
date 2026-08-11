@@ -379,6 +379,27 @@ export interface AdminResultRecord {
   primaryArea: VocationalArea
   topCareer: string
   affinity: number
+  programs: Array<{
+    id: string
+    name: string
+    affinity: number
+  }>
+  completedAt: string
+}
+
+export interface BackendRecentResult {
+  id: string
+  studentName: string
+  document: string
+  city: string
+  primaryArea: string
+  topCareer: string
+  affinity: number
+  programs?: Array<{
+    idPrograma: number
+    nombrePrograma: string
+    valorAfinidad: number
+  }>
   completedAt: string
 }
 
@@ -387,7 +408,7 @@ export interface AdminDashboard {
   mostSelectedArea: VocationalArea
   geographicDistribution: GeographicDistributionItem[]
   affinityDistribution: ChartDatum[]
-  recentResults: AdminResultRecord[]
+  recentResults: BackendRecentResult[]
   internos: number
   externos: number
 }
