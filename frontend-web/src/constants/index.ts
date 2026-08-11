@@ -13,6 +13,7 @@ export const APP_ROUTES = {
   login: '/iniciar-sesion',
   register: '/registro',
   recoverPassword: '/recuperar-contrasena',
+  resetPassword: '/restablecer-contrasena',
   profile: '/perfil',
   testIntro: '/prueba-vocacional',
   testSession: '/prueba-vocacional/sesion',

@@ -4,6 +4,7 @@ import type {
   LoginPayload,
   RecoverPasswordPayload,
   RegisterPayload,
+  ResetPasswordPayload,
   UserProfile,
 } from '../types'
 import { api } from './apiClient'
@@ -94,6 +95,22 @@ export const authService = {
     return {
       data: { status: response.data.message },
       endpoint: '/auth/forgot-password',
+      mocked: false,
+      requestedAt: response.requestedAt,
+    }
+  },
+
+  async resetPassword(
+    payload: ResetPasswordPayload,
+  ): Promise<ApiEnvelope<{ status: string }>> {
+    const response = await api.post<MensajeResponse>('/auth/reset-password', {
+      token: payload.token,
+      nuevaContrasena: payload.nuevaContrasena,
+    })
+
+    return {
+      data: { status: response.data.message },
+      endpoint: '/auth/reset-password',
       mocked: false,
       requestedAt: response.requestedAt,
     }

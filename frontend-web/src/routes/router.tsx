@@ -17,6 +17,9 @@ const RegisterPage = lazy(async () => ({
 const ForgotPasswordPage = lazy(async () => ({
   default: (await import('../pages/auth/ForgotPasswordPage')).ForgotPasswordPage,
 }))
+const ResetPasswordPage = lazy(async () => ({
+  default: (await import('../pages/auth/ResetPasswordPage')).ResetPasswordPage,
+}))
 const TestIntroPage = lazy(async () => ({
   default: (await import('../pages/test/TestIntroPage')).TestIntroPage,
 }))
@@ -57,11 +60,16 @@ export const router = createBrowserRouter(
         { path: APP_ROUTES.login, element: withSuspense(<LoginPage />) },
         { path: APP_ROUTES.register, element: withSuspense(<RegisterPage />) },
         { path: APP_ROUTES.recoverPassword, element: withSuspense(<ForgotPasswordPage />) },
+        { path: APP_ROUTES.resetPassword, element: withSuspense(<ResetPasswordPage />) },
         { path: '/auth/login', element: <Navigate to={APP_ROUTES.login} replace /> },
         { path: '/auth/register', element: <Navigate to={APP_ROUTES.register} replace /> },
         {
           path: '/auth/recover-password',
           element: <Navigate to={APP_ROUTES.recoverPassword} replace />,
+        },
+        {
+          path: '/auth/reset-password',
+          element: <Navigate to={APP_ROUTES.resetPassword} replace />,
         },
         { path: '/prueba', element: <Navigate to={APP_ROUTES.testIntro} replace /> },
         {
