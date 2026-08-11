@@ -64,6 +64,11 @@ export interface RecoverPasswordPayload {
   document?: string
 }
 
+export interface ResetPasswordPayload {
+  token: string
+  nuevaContrasena: string
+}
+
 export interface UpdateUserProfilePayload {
   firstName: string
   lastName: string
@@ -213,6 +218,7 @@ export interface AreaProfile {
   perfil?: string
   descripcionArea?: string
   imagenUrl?: string
+  imagenPachoUrl?: string
 }
 
 export interface AreaAffinityProfile {
@@ -270,6 +276,7 @@ export interface BackendAfinidadArea {
   perfil: string | null
   descripcionArea: string | null
   pathLogo: string | null
+  pachoPath: string | null
 }
 
 export interface BackendProgramaAfinidad {

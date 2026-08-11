@@ -80,8 +80,8 @@ export function ResultCharts({
           <div className="perfil-vocacional-card">
             <div className="perfil-vocacional-card__principal">
               <img
-                src={`${import.meta.env.BASE_URL}images/pacho/pachito_celebra.png`}
-                alt=""
+                src={selectedProfile.imagenPachoUrl ?? selectedProfile.imagenUrl}
+                alt={selectedProfile.nombreArea}
                 className="perfil-vocacional-card__imagen"
               />
               <div className="perfil-vocacional-card__texto">

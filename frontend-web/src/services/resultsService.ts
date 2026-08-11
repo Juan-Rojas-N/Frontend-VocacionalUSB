@@ -16,9 +16,25 @@ const AREA_IMAGE_BY_ID: Record<number, string> = {
   9: 'Ciencias_Agrarias.png',
 }
 
+const PACHO_IMAGE_BY_ID: Record<number, string> = {
+  2: 'Ciencias_Salud.jpeg',
+  3: 'Ingenieria.jpeg',
+  4: 'Ciencias_Economicas_Administrativas.jpeg',
+  5: 'Ciencias_Sociales_Humanas.jpeg',
+  6: 'Artes.jpeg',
+  7: 'Ciencias_Exactas.jpeg',
+  8: 'Educacion.png',
+  9: 'Ciencias_Agrarias.png',
+}
+
 function toAreaImageUrl(idArea: number, pathLogo: string | null): string | undefined {
   const fileName = pathLogo?.trim() ? pathLogo.trim() : AREA_IMAGE_BY_ID[idArea]
   return fileName ? `${import.meta.env.BASE_URL}images/areas/${fileName}` : undefined
+}
+
+function toAreaPachoUrl(idArea: number, pachoPath: string | null): string | undefined {
+  const fileName = pachoPath?.trim() ? pachoPath.trim() : PACHO_IMAGE_BY_ID[idArea]
+  return fileName ? `${import.meta.env.BASE_URL}images/pacho/${fileName}` : undefined
 }
 
 function toVocationalResult(raw: BackendResultado): VocationalResult {
@@ -63,6 +79,7 @@ function toVocationalResult(raw: BackendResultado): VocationalResult {
       perfil: item.descripcionArea ?? undefined,
       descripcionArea: item.perfil ?? undefined,
       imagenUrl: toAreaImageUrl(item.idArea, item.pathLogo),
+      imagenPachoUrl: toAreaPachoUrl(item.idArea, item.pachoPath),
     })),
     perfil: raw.perfil ?? undefined,
     descripcionArea: raw.descripcionArea ?? undefined,
