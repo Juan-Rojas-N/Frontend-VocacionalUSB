@@ -2670,6 +2670,7 @@ button {
 .navegacion-preguntas__paginacion {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   flex: 1 1 auto;
   min-width: 0;
@@ -2705,6 +2706,7 @@ button {
 .navegacion-preguntas__lista {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
   flex: 1 1 auto;

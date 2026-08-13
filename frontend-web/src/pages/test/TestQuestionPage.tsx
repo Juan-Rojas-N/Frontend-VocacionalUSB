@@ -14,7 +14,7 @@ function formatClock(totalSeconds: number) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-const QUESTIONS_PAGE_SIZE = 12
+const QUESTIONS_PAGE_SIZE = 16
 
 export function TestQuestionPage() {
   const navigate = useNavigate()
