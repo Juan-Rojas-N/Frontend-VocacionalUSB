@@ -14,6 +14,8 @@ function formatClock(totalSeconds: number) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
+const QUESTIONS_PAGE_SIZE = 12
+
 export function TestQuestionPage() {
   const navigate = useNavigate()
   const {
@@ -39,6 +41,18 @@ export function TestQuestionPage() {
   const [errorMessage, setErrorMessage] = useState('')
 
   const currentQuestion = questions[currentIndex]
+
+  const questionsPage = Math.floor(currentIndex / QUESTIONS_PAGE_SIZE)
+
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(questions.length / QUESTIONS_PAGE_SIZE)),
+    [questions.length],
+  )
+
+  const visibleQuestions = useMemo(
+    () => questions.slice(questionsPage * QUESTIONS_PAGE_SIZE, (questionsPage + 1) * QUESTIONS_PAGE_SIZE),
+    [questions, questionsPage],
+  )
   const remainingSeconds = useCountdown(expiresAt, () => {
     setIntroOpen(false)
     setResultsOpen(true)
@@ -199,29 +213,58 @@ export function TestQuestionPage() {
               <strong>{answeredCount}</strong>
               <span>de {questions.length} respondidas</span>
             </div>
-            <div className="navegacion-preguntas__lista">
-              {questions.map((question, index) => {
-                const isAnswered = Boolean(answers[question.id])
+            <div className="navegacion-preguntas__paginacion">
+              <button
+                type="button"
+                className="navegacion-preguntas__flecha"
+                onClick={() =>
+                  setCurrentIndex(Math.max(0, questionsPage * QUESTIONS_PAGE_SIZE - 1))
+                }
+                disabled={questionsPage === 0}
+                aria-label="Ver preguntas anteriores"
+                title="Ver preguntas anteriores"
+              >
+                ‹
+              </button>
+              <div className="navegacion-preguntas__lista">
+                {visibleQuestions.map((question, index) => {
+                  const globalIndex = questionsPage * QUESTIONS_PAGE_SIZE + index
+                  const isAnswered = Boolean(answers[question.id])
 
-                return (
-                  <button
-                    key={question.id}
-                    type="button"
-                    className={[
-                      'navegacion-preguntas__item',
-                      index === currentIndex ? 'navegacion-preguntas__item--activo' : '',
-                      isAnswered ? 'navegacion-preguntas__item--respondida' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    onClick={() => setCurrentIndex(index)}
-                    aria-label={`Pregunta ${index + 1}: ${isAnswered ? 'respondida' : 'pendiente'}`}
-                    title={isAnswered ? 'Respondida' : 'Pendiente'}
-                  >
-                    <span>{index + 1}</span>
-                  </button>
-                )
-              })}
+                  return (
+                    <button
+                      key={question.id}
+                      type="button"
+                      className={[
+                        'navegacion-preguntas__item',
+                        globalIndex === currentIndex ? 'navegacion-preguntas__item--activo' : '',
+                        isAnswered ? 'navegacion-preguntas__item--respondida' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      onClick={() => setCurrentIndex(globalIndex)}
+                      aria-label={`Pregunta ${globalIndex + 1}: ${isAnswered ? 'respondida' : 'pendiente'}`}
+                      title={isAnswered ? 'Respondida' : 'Pendiente'}
+                    >
+                      <span>{globalIndex + 1}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              <button
+                type="button"
+                className="navegacion-preguntas__flecha"
+                onClick={() =>
+                  setCurrentIndex(
+                    Math.min(questions.length - 1, (questionsPage + 1) * QUESTIONS_PAGE_SIZE),
+                  )
+                }
+                disabled={questionsPage >= totalPages - 1}
+                aria-label="Ver siguientes preguntas"
+                title="Ver siguientes preguntas"
+              >
+                ›
+              </button>
             </div>
             <button
               type="button"
