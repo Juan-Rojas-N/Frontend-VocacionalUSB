@@ -38,6 +38,7 @@ interface BackendAreaResponse {
   perfilPredonimante?: string | null
   descripcionArea?: string | null
   pathLogo?: string | null
+  activo?: boolean
 }
 
 interface BackendProgramaResponse {
@@ -46,6 +47,7 @@ interface BackendProgramaResponse {
   descripcionPrograma?: string | null
   urlPrograma?: string | null
   idArea: number
+  activo?: boolean
 }
 
 interface BackendDepartamento {
@@ -513,7 +515,7 @@ export const adminService = {
         name: area.nombreArea,
         description: area.descripcionArea ?? '',
         profile: area.perfilPredonimante ?? '',
-        active: true,
+        active: area.activo ?? true,
       })),
       programs: (programsResponse?.data ?? []).map((program) => ({
         id: String(program.id),
@@ -521,7 +523,7 @@ export const adminService = {
         description: program.descripcionPrograma ?? '',
         areaId: String(program.idArea),
         url: program.urlPrograma ?? undefined,
-        active: true,
+        active: program.activo ?? true,
       })),
       tests: readStoredTests(),
     }
@@ -558,6 +560,75 @@ export const adminService = {
     return {
       data: cloneCatalogs(catalogs),
       endpoint: '/api/v1/areas',
+      mocked: false,
+      requestedAt: new Date().toISOString(),
+    }
+  },
+
+  async resetUserPassword(
+    userId: string,
+  ): Promise<{
+    data: { message: string }
+    endpoint: string
+    mocked: boolean
+    requestedAt: string
+  }> {
+    const response = await api.post<{ message: string }>(`/usuarios/${userId}/restablecer-contrasena`)
+    return {
+      data: response.data,
+      endpoint: `/api/v1/usuarios/${userId}/restablecer-contrasena`,
+      mocked: false,
+      requestedAt: new Date().toISOString(),
+    }
+  },
+
+  async getLogs(): Promise<{
+    data: Array<{
+      id: number
+      idUsuarioAlterado: number
+      nombreUsuario: string | null
+      idActividad: number
+      nombreActividad: string | null
+      descripcion: string | null
+      fecha: string
+    }>
+    endpoint: string
+    mocked: boolean
+    requestedAt: string
+  }> {
+    const response = await api.get<Array<{
+      id: number
+      idUsuarioAlterado: number
+      nombreUsuario: string | null
+      idActividad: number
+      nombreActividad: string | null
+      descripcion: string | null
+      fecha: string
+    }>>('/logs')
+    return {
+      data: response.data,
+      endpoint: '/api/v1/logs',
+      mocked: false,
+      requestedAt: new Date().toISOString(),
+    }
+  },
+
+  async uploadPachoImage(areaId: string, file: File): Promise<{
+    data: { pachoPath: string }
+    endpoint: string
+    mocked: boolean
+    requestedAt: string
+  }> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post<{ pachoPath: string }>(
+      `/areas/${areaId}/imagen-pacho`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    )
+    return {
+      data: response.data,
+      endpoint: `/api/v1/areas/${areaId}/imagen-pacho`,
       mocked: false,
       requestedAt: new Date().toISOString(),
     }

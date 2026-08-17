@@ -34,6 +34,11 @@ export interface UpdateProfilePayload {
   semestre?: number | null
 }
 
+export interface ChangePasswordPayload {
+  passwordActual: string
+  passwordNueva: string
+}
+
 const VALID_GENDERS: GenderOption[] = ['Masculino', 'Femenino', 'Prefiero no decirlo', 'Otro']
 
 function mapGender(value: string | null): GenderOption {
@@ -92,5 +97,12 @@ export const userService = {
 
   async deleteAccount(): Promise<void> {
     await api.delete<void>('/usuarios/me')
+  },
+
+  async changePassword(payload: ChangePasswordPayload): Promise<void> {
+    await api.post<void>('/usuarios/me/cambiar-contrasena', {
+      passwordActual: payload.passwordActual,
+      passwordNueva: payload.passwordNueva,
+    })
   },
 }

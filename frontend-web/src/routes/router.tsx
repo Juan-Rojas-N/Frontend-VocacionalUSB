@@ -38,6 +38,12 @@ const AdminDashboardPage = lazy(async () => ({
 const ProfilePage = lazy(async () => ({
   default: (await import('../pages/profile/ProfilePage')).ProfilePage,
 }))
+const TestHistoryView = lazy(async () => ({
+  default: (await import('../pages/profile/TestHistoryView')).TestHistoryView,
+}))
+const AdminLogsView = lazy(async () => ({
+  default: (await import('../pages/admin/components/AdminLogsView')).AdminLogsView,
+}))
 const NotFoundPage = lazy(async () => ({
   default: (await import('../pages/NotFoundPage')).NotFoundPage,
 }))
@@ -88,6 +94,7 @@ export const router = createBrowserRouter(
           element: <RouteGuard allowedRoles={['student', 'administrator', 'root']} />,
           children: [
             { path: APP_ROUTES.profile, element: withSuspense(<ProfilePage />) },
+            { path: APP_ROUTES.testHistory, element: withSuspense(<TestHistoryView />) },
             { path: APP_ROUTES.testIntro, element: withSuspense(<TestIntroPage />) },
             { path: APP_ROUTES.testSession, element: withSuspense(<TestQuestionPage />) },
             { path: APP_ROUTES.testReview, element: withSuspense(<TestReviewPage />) },
@@ -100,7 +107,10 @@ export const router = createBrowserRouter(
         },
         {
           element: <RouteGuard allowedRoles={['administrator', 'root']} />,
-          children: [{ path: APP_ROUTES.admin, element: withSuspense(<AdminDashboardPage />) }],
+          children: [
+            { path: APP_ROUTES.admin, element: withSuspense(<AdminDashboardPage />) },
+            { path: APP_ROUTES.adminLogs, element: withSuspense(<AdminLogsView />) },
+          ],
         },
         { path: '*', element: withSuspense(<NotFoundPage />) },
       ],

@@ -36,9 +36,17 @@ export function UserDropdown({ open, onClose }: UserDropdownProps) {
       <Link to={APP_ROUTES.profile} className="user-dropdown__item" onClick={onClose}>
         Perfil
       </Link>
+      <Link to={APP_ROUTES.testHistory} className="user-dropdown__item" onClick={onClose}>
+        Historial de pruebas
+      </Link>
       {hasAdministrativeAccess(sessionUser.role) ? (
         <Link to={APP_ROUTES.admin} className="user-dropdown__item" onClick={onClose}>
           Administración
+        </Link>
+      ) : null}
+      {sessionUser.role === 'root' ? (
+        <Link to={APP_ROUTES.adminLogs} className="user-dropdown__item" onClick={onClose}>
+          Logs del sistema
         </Link>
       ) : null}
       <button

@@ -26,6 +26,21 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>
 
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, 'Ingresa tu contraseña actual.'),
+  newPassword: z
+    .string()
+    .min(8, 'La nueva contraseña debe tener al menos 8 caracteres.')
+    .regex(/[A-Z]/, 'Debe contener al menos una mayúscula.')
+    .regex(/[0-9]/, 'Debe contener al menos un número.'),
+  confirmPassword: z.string().min(1, 'Confirma la nueva contraseña.'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: 'Las contraseñas no coinciden.',
+  path: ['confirmPassword'],
+})
+
+type PasswordFormValues = z.infer<typeof passwordSchema>
+
 function toFormValues(profile: UserProfile): ProfileFormValues {
   return {
     firstName: profile.firstName,
@@ -39,9 +54,15 @@ function toFormValues(profile: UserProfile): ProfileFormValues {
 export function ProfilePage() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
   const updateSessionUser = useAuthStore((state) => state.updateSessionUser)
+  const signOut = useAuthStore((state) => state.signOut)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(
+    null,
+  )
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [passwordStatus, setPasswordStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null,
   )
   const [, forceRender] = useReducer((value: number) => value + 1, 0)
@@ -93,6 +114,20 @@ export function ProfilePage() {
 
   const departmentId = useWatch({ control, name: 'departmentId' })
   const municipalities = getMunicipalitiesByDepartment(departmentId)
+
+  const {
+    register: registerPassword,
+    handleSubmit: handleSubmitPassword,
+    reset: resetPassword,
+    formState: { errors: passwordErrors, isDirty: isPasswordDirty },
+  } = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  })
 
   useEffect(() => {
     if (!departmentId) {
@@ -158,6 +193,46 @@ export function ProfilePage() {
     reset(toFormValues(sessionUser))
     setIsEditing(false)
     setStatus(null)
+  }
+
+  const onSubmitPassword = handleSubmitPassword(async (values) => {
+    try {
+      setIsChangingPassword(true)
+      setPasswordStatus(null)
+      await userService.changePassword({
+        passwordActual: values.currentPassword,
+        passwordNueva: values.newPassword,
+      })
+      resetPassword({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setShowPasswordForm(false)
+      setPasswordStatus({ tone: 'success', message: 'Contraseña cambiada correctamente.' })
+    } catch (error) {
+      setPasswordStatus({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'No fue posible cambiar la contraseña.',
+      })
+    } finally {
+      setIsChangingPassword(false)
+    }
+  })
+
+  async function handleDeleteAccount() {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+      return
+    }
+    if (!window.confirm('Última confirmación: se eliminarán todos tus datos. ¿Continuar?')) {
+      return
+    }
+    try {
+      await userService.deleteAccount()
+      signOut()
+      window.location.href = '/'
+    } catch (error) {
+      setStatus({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'No fue posible eliminar la cuenta.',
+      })
+    }
   }
 
   const departmentName = getDepartmentDisplayName(
@@ -359,6 +434,125 @@ export function ProfilePage() {
           </p>
         ) : null}
       </section>
+
+      <section className="profile-card" style={{ marginTop: '1.5rem' }}>
+        <div className="profile-card__hero">
+          <div className="profile-card__hero-copy">
+            <span>Seguridad</span>
+            <h2>Cambiar contraseña</h2>
+            <p>Actualiza tu contraseña periódicamente para mantener tu cuenta segura.</p>
+          </div>
+          {!showPasswordForm ? (
+            <button
+              type="button"
+              className="profile-card__edit"
+              onClick={() => {
+                setPasswordStatus(null)
+                setShowPasswordForm(true)
+              }}
+            >
+              Cambiar contraseña
+            </button>
+          ) : null}
+        </div>
+
+        {showPasswordForm ? (
+          <form className="profile-form" onSubmit={onSubmitPassword} noValidate>
+            <div className="profile-form__grid">
+              <div className="autenticacion-campo">
+                <label htmlFor="current-password">Contraseña actual</label>
+                <input
+                  id="current-password"
+                  className="autenticacion-control"
+                  type="password"
+                  autoComplete="current-password"
+                  aria-invalid={Boolean(passwordErrors.currentPassword)}
+                  {...registerPassword('currentPassword')}
+                />
+                {passwordErrors.currentPassword ? (
+                  <small className="form-field__error">{passwordErrors.currentPassword.message}</small>
+                ) : null}
+              </div>
+
+              <div className="autenticacion-campo">
+                <label htmlFor="new-password">Nueva contraseña</label>
+                <input
+                  id="new-password"
+                  className="autenticacion-control"
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(passwordErrors.newPassword)}
+                  {...registerPassword('newPassword')}
+                />
+                {passwordErrors.newPassword ? (
+                  <small className="form-field__error">{passwordErrors.newPassword.message}</small>
+                ) : null}
+              </div>
+
+              <div className="autenticacion-campo">
+                <label htmlFor="confirm-password">Confirmar contraseña</label>
+                <input
+                  id="confirm-password"
+                  className="autenticacion-control"
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(passwordErrors.confirmPassword)}
+                  {...registerPassword('confirmPassword')}
+                />
+                {passwordErrors.confirmPassword ? (
+                  <small className="form-field__error">{passwordErrors.confirmPassword.message}</small>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="profile-form__actions">
+              <button
+                type="button"
+                className="profile-form__cancel"
+                onClick={() => {
+                  resetPassword({ currentPassword: '', newPassword: '', confirmPassword: '' })
+                  setShowPasswordForm(false)
+                  setPasswordStatus(null)
+                }}
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="boton-principal" disabled={isChangingPassword || !isPasswordDirty}>
+                {isChangingPassword ? 'Cambiando...' : 'Cambiar contraseña'}
+              </button>
+            </div>
+          </form>
+        ) : null}
+
+        {passwordStatus ? (
+          <p
+            className={`profile-card__status profile-card__status--${passwordStatus.tone}`}
+            role={passwordStatus.tone === 'error' ? 'alert' : 'status'}
+          >
+            {passwordStatus.message}
+          </p>
+        ) : null}
+      </section>
+
+      {sessionUser?.role !== 'root' ? (
+        <section className="profile-card" style={{ marginTop: '1.5rem' }}>
+          <div className="profile-card__hero">
+            <div className="profile-card__hero-copy">
+              <span>Zona de peligro</span>
+              <h2>Eliminar cuenta</h2>
+              <p>Esta acción es permanente y no se puede deshacer.</p>
+            </div>
+            <button
+              type="button"
+              className="profile-card__edit"
+              style={{ background: '#dc3545', borderColor: '#dc3545' }}
+              onClick={() => void handleDeleteAccount()}
+            >
+              Eliminar cuenta
+            </button>
+          </div>
+        </section>
+      ) : null}
     </div>
   )
 }

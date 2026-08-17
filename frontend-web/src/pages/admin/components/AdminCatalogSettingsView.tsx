@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { adminService } from '../../../services/adminService'
 import type {
   AdminAreaCatalogItem,
@@ -58,6 +58,9 @@ export function AdminCatalogSettingsView() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [uploadingAreaId, setUploadingAreaId] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     let active = true
@@ -89,7 +92,22 @@ export function AdminCatalogSettingsView() {
     [catalogs, savedCatalogs],
   )
 
-  const activeItems = catalogs?.[activeTab] ?? []
+  const activeItems = useMemo(() => {
+    const items = catalogs?.[activeTab] ?? []
+    if (!searchQuery.trim()) return items
+    const query = searchQuery.trim().toLowerCase()
+    return items.filter((item) => {
+      if (activeTab === 'programs') {
+        const areaName = catalogs.areas.find((a) => a.id === (item as AdminProgramCatalogItem).areaId)?.name ?? ''
+        return item.name.toLowerCase().includes(query) || areaName.toLowerCase().includes(query)
+      }
+      if (activeTab === 'tests') {
+        const test = item as AdminTestCatalogItem
+        return item.name.toLowerCase().includes(query) || test.version.toLowerCase().includes(query)
+      }
+      return item.name.toLowerCase().includes(query)
+    })
+  }, [catalogs, activeTab, searchQuery])
 
   function updateForm(field: keyof CatalogFormValues, value: string) {
     setFormValues((current) => ({ ...current, [field]: value }))
@@ -312,6 +330,34 @@ export function AdminCatalogSettingsView() {
     }
   }
 
+  async function handlePachoUpload(areaId: string, file: File) {
+    try {
+      setUploadingAreaId(areaId)
+      setStatus(null)
+      await adminService.uploadPachoImage(areaId, file)
+      setStatus({
+        tone: 'success',
+        message: 'Imagen de Pacho actualizada correctamente.',
+      })
+    } catch (error) {
+      setStatus({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'No fue posible subir la imagen.',
+      })
+    } finally {
+      setUploadingAreaId(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  function triggerPachoUpload(areaId: string) {
+    if (!fileInputRef.current) return
+    fileInputRef.current.dataset.areaId = areaId
+    fileInputRef.current.click()
+  }
+
   if (loadState === 'loading') {
     return <div className="loading-state">Cargando configuración...</div>
   }
@@ -327,6 +373,19 @@ export function AdminCatalogSettingsView() {
 
   return (
     <section className="seccion-administracion">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          const areaId = e.target.dataset.areaId
+          if (file && areaId) {
+            void handlePachoUpload(areaId, file)
+          }
+        }}
+      />
       <div className="seccion-administracion__encabezado">
         <div>
           <span className="panel-administracion__eyebrow">Administrador · Configuración</span>
@@ -352,6 +411,7 @@ export function AdminCatalogSettingsView() {
               setActiveTab(tab)
               setFormMode(null)
               setFormErrors({})
+              setSearchQuery('')
             }}
           >
             {TAB_LABELS[tab]}
@@ -371,9 +431,24 @@ export function AdminCatalogSettingsView() {
             <strong>{TAB_LABELS[activeTab]}</strong>
             <span>Crear, editar y cambiar el estado de los registros del borrador.</span>
           </div>
-          <button type="button" onClick={openCreateForm}>
-            Crear {activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'prueba'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder={`Buscar ${activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'prueba'}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                padding: '0.4rem 0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                width: '200px',
+              }}
+            />
+            <button type="button" onClick={openCreateForm}>
+              Crear {activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'prueba'}
+            </button>
+          </div>
         </div>
 
         {formMode ? (
@@ -510,6 +585,11 @@ export function AdminCatalogSettingsView() {
 
         {activeItems.length > 0 ? (
           <div className="admin-catalog-list">
+            {searchQuery.trim() && activeItems.length < (catalogs?.[activeTab]?.length ?? 0) ? (
+              <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                Mostrando {activeItems.length} de {catalogs?.[activeTab]?.length ?? 0} registros
+              </p>
+            ) : null}
             {activeItems.map((item) => {
               const area = activeTab === 'areas' ? (item as AdminAreaCatalogItem) : null
               const program = activeTab === 'programs' ? (item as AdminProgramCatalogItem) : null
@@ -531,6 +611,15 @@ export function AdminCatalogSettingsView() {
                     ) : null}
                   </div>
                   <div className="admin-catalog-list__actions">
+                    {area ? (
+                      <button
+                        type="button"
+                        onClick={() => triggerPachoUpload(item.id)}
+                        disabled={uploadingAreaId === item.id}
+                      >
+                        {uploadingAreaId === item.id ? 'Subiendo...' : 'Subir Pacho'}
+                      </button>
+                    ) : null}
                     <button type="button" onClick={() => openEditForm(item)}>Editar</button>
                     <button type="button" onClick={() => toggleActive(item.id, item.active)}>
                       {item.active ? 'Desactivar' : 'Reactivar'}
@@ -541,7 +630,11 @@ export function AdminCatalogSettingsView() {
             })}
           </div>
         ) : (
-          <div className="admin-empty-state">No hay registros en este catálogo.</div>
+          <div className="admin-empty-state">
+            {searchQuery.trim()
+              ? `No se encontraron resultados para "${searchQuery.trim()}".`
+              : 'No hay registros en este catálogo.'}
+          </div>
         )}
       </div>
 

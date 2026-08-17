@@ -122,4 +122,8 @@ export const resultsService = {
       data: toVocationalResult(resultResponse.data),
     }
   },
+
+  async getMyTestHistory() {
+    return api.get<BackendPrueba[]>('/pruebas/mis-pruebas')
+  },
 }

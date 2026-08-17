@@ -20,6 +20,8 @@ export const APP_ROUTES = {
   testReview: '/prueba-vocacional/revision',
   results: '/resultados',
   admin: '/administracion',
+  testHistory: '/historial',
+  adminLogs: '/administracion/logs',
 } as const
 
 export const LEGAL_COPY = {

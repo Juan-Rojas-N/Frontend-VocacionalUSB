@@ -12,6 +12,7 @@ export function RootUserRolesView() {
   const [users, setUsers] = useState<RegisteredUserRecord[]>([])
   const [draftRoles, setDraftRoles] = useState<Record<string, UserRole>>({})
   const [savingUserId, setSavingUserId] = useState<string | null>(null)
+  const [resettingUserId, setResettingUserId] = useState<string | null>(null)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
@@ -65,6 +66,29 @@ export function RootUserRolesView() {
       })
     } finally {
       setSavingUserId(null)
+    }
+  }
+
+  async function resetPassword(user: RegisteredUserRecord) {
+    if (!window.confirm(`¿Restablecer la contraseña de ${user.fullName}? Se generará una contraseña temporal.`)) {
+      return
+    }
+
+    try {
+      setResettingUserId(user.id)
+      setStatus(null)
+      const response = await adminService.resetUserPassword(user.id)
+      setStatus({
+        tone: 'success',
+        message: response.data.message,
+      })
+    } catch (error) {
+      setStatus({
+        tone: 'error',
+        message: error instanceof Error ? error.message : 'No fue posible restablecer la contraseña.',
+      })
+    } finally {
+      setResettingUserId(null)
     }
   }
 
@@ -148,6 +172,15 @@ export function RootUserRolesView() {
                     disabled={!hasPendingChange || isCurrentUser || savingUserId === user.id}
                   >
                     {savingUserId === user.id ? 'Guardando...' : 'Guardar cambio'}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-inline-save"
+                    style={{ marginLeft: '0.5rem', background: '#6c757d' }}
+                    onClick={() => void resetPassword(user)}
+                    disabled={isCurrentUser || resettingUserId === user.id || user.role === 'root'}
+                  >
+                    {resettingUserId === user.id ? 'Restableciendo...' : 'Restablecer contraseña'}
                   </button>
                   {isCurrentUser ? (
                     <small>No puedes cambiar tu propio rol durante la sesión activa.</small>

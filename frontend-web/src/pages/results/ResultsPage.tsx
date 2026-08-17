@@ -175,7 +175,7 @@ export function ResultsPage() {
           <p>
             Según tus respuestas, tu mayor afinidad es con el área de{' '}
             <span>{data.primaryArea}</span>, con un resultado de{' '}
-            <span>{formatPercentage(topCareer.affinity)}</span>. Esto indica que podrías sentirte
+            <span>{formatPercentage(data.affinityByArea[0]?.value ?? 0)}</span>. Esto indica que podrías sentirte
             cómodo/a explorando carreras relacionadas, ya que se alinean con tus intereses,
             habilidades y preferencias.
           </p>

@@ -8,6 +8,7 @@ import type {
   TestSubmissionPayload,
 } from '../types'
 import { api } from './apiClient'
+import { useTestSessionStore } from '../stores/testSessionStore'
 
 const ATTEMPT_DURATION_MINUTES = 35
 
@@ -64,6 +65,11 @@ export const testService = {
   },
 
   async submitAttempt(payload: TestSubmissionPayload) {
+    const store = useTestSessionStore.getState()
+    const tiempoInvertido = store.startedAt
+      ? Math.round((Date.now() - new Date(store.startedAt).getTime()) / 1000)
+      : null
+
     const respuestas: BackendRespuestaPrueba[] = payload.questions.map((question) => ({
       preguntaId: question.preguntaId,
       codigoPregunta: question.codigoPregunta,
@@ -71,7 +77,7 @@ export const testService = {
     }))
 
     const response = await api.post<BackendResultado>('/pruebas', {
-      tiempoInvertido: null,
+      tiempoInvertido,
       versionPrueba: 'v1.1',
       satisfaccion: null,
       respuestas,
