@@ -1,149 +1,336 @@
-# USB Vocacional Frontend
-"a"
-Frontend web de `USB Vocacional` construido con `Vite + React + TypeScript`.
+# USB Vocacional — Frontend
 
-El proyecto usa `pnpm` como package manager oficial.
+Plataforma web de orientación vocacional de la Universidad San Buenaventura Bogotá. Construida con **React 19 + TypeScript + Vite 8**, consume una API REST en **Spring Boot 4** (`ProyectoVocacional`).
 
-Se creó en una carpeta separada `frontend-web/` porque el proyecto existente en `ProyectoVocacional/` es un backend `Spring Boot + Kotlin`. Mantener React dentro de `src/main/kotlin/.../Frontend` no es adecuado para un frontend profesional por estas razones:
+---
 
-- React requiere un ciclo de build y dependencias propias de Node/Vite.
-- El frontend debe poder desplegarse, versionarse y probarse de forma independiente.
-- Mezclar código UI con el árbol Kotlin dificulta escalabilidad, CI/CD y separación de responsabilidades.
+## Tabla de contenidos
 
-## Cómo instalar
+- [Tecnologías](#tecnologías)
+- [Requisitos previos](#requisitos-previos)
+- [Instalación y ejecución](#instalación-y-ejecución)
+- [Variables de entorno](#variables-de-entorno)
+- [Arquitectura del proyecto](#arquitectura-del-proyecto)
+- [Rutas y permisos](#rutas-y-permisos)
+- [Módulos funcionales](#módulos-funcionales)
+- [Servicios y conexión con el backend](#servicios-y-conexión-con-el-backend)
+- [Estado global (stores)](#estado-global-stores)
+- [Estilos y diseño](#estilos-y-diseño)
+- [Scripts disponibles](#scripts-disponibles)
+- [Estructura de tipos](#estructura-de-tipos)
+
+---
+
+## Tecnologías
+
+| Categoría | Tecnología | Versión |
+|---|---|---|
+| Framework | React | 19.2 |
+| Lenguaje | TypeScript | 6.0 |
+| Build tool | Vite | 8.0 |
+| Routing | React Router DOM | 7.9 |
+| Estado global | Zustand | 5.0 |
+| Formularios | React Hook Form + Zod | 7.66 / 4.1 |
+| Gráficos | Recharts | 3.3 |
+| PDF | jsPDF + jspdf-autotable | 4.2 / 5.0 |
+| Package manager | pnpm | 11.8 |
+
+---
+
+## Requisitos previos
+
+- **Node.js** >= 18
+- **pnpm** >= 11 (instalar con `npm install -g pnpm`)
+- Backend **ProyectoVocacional** corriendo en `http://localhost:8088`
+
+---
+
+## Instalación y ejecución
 
 ```bash
-cd frontend-web
+# Clonar el repositorio
+git clone https://github.com/Juan-Rojas-N/Frontend-VocacionalUSB.git
+cd Frontend-VocacionalUSB/frontend-web
+
+# Instalar dependencias
 pnpm install
-```
 
-## Cómo ejecutar
+# Crear archivo de entorno (copiar el ejemplo)
+cp .env.example .env
+# Editar .env con la URL del backend
 
-```bash
+# Ejecutar en modo desarrollo
 pnpm dev
 ```
 
-Para compilación de producción:
+La aplicación estará disponible en `http://localhost:5173/vocacional/`.
+
+### Compilación de producción
 
 ```bash
-pnpm build
+pnpm build      # Genera dist/
+pnpm preview    # Previsualiza la build de producción
 ```
 
-Para lint:
+### Lint
 
 ```bash
 pnpm lint
 ```
 
-## Arquitectura frontend
+---
+
+## Variables de entorno
+
+| Variable | Descripción | Ejemplo |
+|---|---|---|
+| `VITE_API_BASE_URL` | URL base de la API backend | `http://localhost:8088/api/v1` |
+| `VITE_USE_MOCKS` | Habilitar datos mock (solo desarrollo) | `false` |
+
+---
+
+## Arquitectura del proyecto
 
 ```text
 src/
-  components/
-    charts/
-    common/
-    dashboard/
-    test/
-  constants/
-  hooks/
-  layouts/
-  mocks/
-  pages/
-    admin/
-    auth/
-    landing/
-    results/
-    test/
-  routes/
-  services/
-  stores/
-  styles/
-  types/
-  utils/
+├── assets/              Imágenes y recursos estáticos
+├── components/          Componentes reutilizables
+│   ├── charts/          Gráficos de resultados
+│   ├── common/          Logo, botones, modales, dropdown de usuario
+│   ├── dashboard/       Tablas del panel administrativo
+│   └── test/            Tarjeta de pregunta, sidebar, guard de salida
+├── constants/           Constantes del dominio (programas, rutas, políticas)
+├── data/                Catálogo de departamentos y municipios de Colombia
+├── hooks/               Hooks reutilizables (countdown)
+├── layouts/             Layouts de navegación (público, administrativo)
+├── mocks/               Datos mock para desarrollo sin backend
+├── pages/               Pantallas del sistema
+│   ├── admin/           Panel administrativo (vistas de ROOT y ADMIN)
+│   ├── auth/            Login, registro, recuperación de contraseña
+│   ├── landing/         Página de inicio
+│   ├── profile/         Perfil de usuario e historial de pruebas
+│   ├── results/         Resultados vocacionales
+│   └── test/            Prueba vocacional (intro, sesión, revisión)
+├── routes/              Definición de rutas y RouteGuard
+├── services/            Clientes HTTP y lógica de negocio
+├── stores/              Estado global con Zustand
+├── styles/              Estilos CSS globales
+├── types/               Definiciones TypeScript
+└── utils/               Helpers de formateo, catálogos, reportes y roles
 ```
 
-### Capas principales
+### Descripción de capas
 
-- `pages`: pantallas navegables del sistema.
-- `components`: piezas reutilizables.
-- `layouts`: estructura pública y administrativa.
-- `routes`: definición de rutas y guardas.
-- `services`: clientes preparados para backend futuro.
-- `types`: contratos TypeScript del dominio.
-- `mocks`: data simulada del proyecto.
-- `stores`: estado global con Zustand para auth y prueba.
-- `hooks`: lógica reutilizable como cronómetro.
-- `utils`: formateadores y helpers de storage.
+| Capa | Responsabilidad |
+|---|---|
+| `pages/` | Pantallas navegables, una por ruta |
+| `components/` | Piezas UI reutilizables entre páginas |
+| `layouts/` | Estructura de header/footer para rutas públicas y paneles |
+| `routes/` | Definición de rutas con `createBrowserRouter` y guards por rol |
+| `services/` | Capa de comunicación HTTP con el backend (fetch API) |
+| `stores/` | Estado global reactivo (autenticación, sesión de prueba) |
+| `types/` | Contratos TypeScript para el dominio y la API |
+| `utils/` | Funciones puras: formateo, validación, catálogos, exportación |
+| `constants/` | Valores estáticos: políticas de contraseña, opciones de género, programas |
+| `hooks/` | Lógica reutilizable extraída como hooks personalizados |
 
-## Alcance implementado
+---
 
-- Landing page con propósito, alcance de la prueba, tiempo estimado y aviso 18+.
-- Login mock con confirmación de mayoría de edad.
-- Registro completo con validación, género abierto y datos académicos condicionales.
-- Recuperación de contraseña mock.
-- Instrucciones de prueba vocacional.
-- Sesión de prueba con preguntas mock, progreso, cronómetro, navegación y abandono con confirmación.
-- Revisión antes de finalizar.
-- Pantalla de resultados con 3 carreras recomendadas, afinidad, explicación cualitativa y gráficos.
-- Panel administrativo con métricas, distribución geográfica, resultados agregados e exportaciones mock.
+## Rutas y permisos
 
-## Endpoints esperados del backend
+| Ruta | Descripción | Roles permitidos |
+|---|---|---|
+| `/vocacional/` | Landing page | Público |
+| `/vocacional/iniciar-sesion` | Inicio de sesión | Público |
+| `/vocacional/registro` | Registro de usuario | Público |
+| `/vocacional/recuperar-contrasena` | Solicitud de recuperación | Público |
+| `/vocacional/restablecer-contrasena` | Restablecer contraseña (token) | Público |
+| `/vocacional/perfil` | Perfil de usuario | Estudiante, Administrador, ROOT |
+| `/vocacional/historial` | Historial de pruebas rendidas | Estudiante, Administrador, ROOT |
+| `/vocacional/prueba-vocacional` | Instrucciones de la prueba | Estudiante, Administrador, ROOT |
+| `/vocacional/prueba-vocacional/sesion` | Sesión de preguntas | Estudiante, Administrador, ROOT |
+| `/vocacional/prueba-vocacional/revision` | Revisión antes de enviar | Estudiante, Administrador, ROOT |
+| `/vocacional/resultados` | Resultados vocacionales | Estudiante, Administrador, ROOT |
+| `/vocacional/resultados/:testId` | Resultado de prueba específica | Estudiante, Administrador, ROOT |
+| `/vocacional/administracion` | Panel administrativo | Administrador, ROOT |
 
-Estos endpoints ya están representados en los servicios del frontend:
+### Roles del sistema
 
-- `POST /api/auth/login`
-- `POST /api/auth/register`
-- `POST /api/auth/recover-password`
-- `GET /api/test/questions`
-- `POST /api/test/attempts`
-- `POST /api/test/submit`
-- `GET /api/results/me`
-- `GET /api/admin/dashboard`
-- `GET /api/admin/results`
-- `GET /api/admin/reports/export`
+| Rol | Descripción | Accesos |
+|---|---|---|
+| `student` | Estudiante regular | Prueba vocacional, perfil, resultados, historial |
+| `administrator` | Administrador | Todo lo del estudiante + dashboard, reportes, catálogos |
+| `root` | Superusuario | Todo lo del administrador + gestión de roles, permisos, usuarios y logs del sistema |
 
-## Qué está mockeado
+---
 
-- Autenticación.
-- Persistencia de usuarios.
-- Banco de preguntas.
-- Inicio y envío de intento de prueba.
-- Resultados vocacionales.
-- Dashboard administrativo.
-- Exportación PDF, CSV y Excel.
+## Módulos funcionales
 
-Los mocks viven en `src/mocks/data.ts` y usan `localStorage` cuando aplica.
+### 1. Autenticación y registro
+- Inicio de sesión con JWT (token Bearer).
+- Registro con validación de mayoría de edad, datos personales, académicos y consentimientos.
+- Recuperación y restablecimiento de contraseña por correo electrónico.
+- Recordar sesión mediante `localStorage` (Zustand persist).
 
-## Tipos modelados
+### 2. Prueba vocacional
+- Instrucciones y confirmación antes de iniciar.
+- 35 preguntas con escala Likert (Rara vez / A veces / A menudo / Siempre).
+- Cronómetro de 35 minutos con advertencia a los 5 minutos restantes.
+- Navegación libre entre preguntas con sidebar de progreso.
+- Guard automático de respuestas en el store.
+- Validación de completitud antes de enviar.
+- Envío al backend con cálculo de tiempo invertido.
 
-El frontend incluye contratos TypeScript para:
+### 3. Resultados vocacionales
+- Área predominante con porcentaje de afinidad.
+- Top 3 programas recomendados con explicación cualitativa.
+- Gráficos de radar y barras (Recharts).
+- Generación de PDF del resultado (jsPDF).
+- Historial de pruebas rendidas con estadísticas resumidas.
 
-- Usuario
-- Rol
-- Pregunta
-- Intento de prueba
-- Resultado
-- Carrera recomendada
-- Área vocacional
-- Dashboard administrativo
-- Exportaciones y envelopes de API
+### 4. Perfil de usuario
+- Visualización de datos de cuenta (correo, documento, teléfono, municipio, departamento).
+- Edición de perfil con validación por Zod.
+- Cambio de contraseña con política de seguridad (mínimo 8 caracteres, mayúscula y número).
+- Eliminación de cuenta con doble confirmación (oculto para ROOT).
 
-## Integración futura con Spring Boot
+### 5. Panel administrativo
 
-Siguientes pasos para conectar el backend real:
+#### Administrador
+- **Resumen general**: métricas de usuarios, pruebas y distribución geográfica.
+- **Resultados**: listado de resultados con filtros.
+- **Reportes**: generación de reportes por filtros con exportación CSV.
+- **Configuración**: CRUD de áreas, programas y pruebas con modo borrador y guardado por lotes.
 
-1. Reemplazar los resolvers mock de `src/services/*.ts` por llamadas HTTP reales.
-2. Centralizar `VITE_API_BASE_URL` en variables de entorno.
-3. Sustituir `localStorage` por respuestas del backend para auth y usuarios.
-4. Conectar el cálculo real de resultados al flujo `submit -> results`.
-5. Reemplazar exportaciones mock por archivos servidos por el backend.
+#### ROOT (adicional)
+- **Roles - Actividades**: asignación de permisos por rol (tabla de roles vs endpoints).
+- **Usuarios - Modificar rol**: cambio de rol de usuarios, restablecimiento de contraseña.
+- **Logs del sistema**: visualización de actividad auditada del sistema.
 
-## Notas de diseño
+---
 
-- Se respetó la identidad base institucional con `#EF7D00` y `#1D1D1B`.
-- La UI es responsive y usa componentes reutilizables.
-- La referencia visual principal se tomó de los requerimientos locales del proyecto.
+## Servicios y conexión con el backend
 
-## Limitación actual sobre Figma
+| Servicio | Archivo | Funciones principales |
+|---|---|---|
+| API Client | `apiClient.ts` | Cliente HTTP genérico con manejo de token, errores y envelope de respuesta |
+| Auth | `authService.ts` | `login`, `register`, `recoverPassword`, `resetPassword` |
+| Token | `tokenStore.ts` | `setAccessToken`, `getAccessToken`, `clearAccessToken` |
+| Usuario | `userService.ts` | `getProfile`, `updateProfile`, `deleteAccount`, `changePassword` |
+| Catálogos | `catalogService.ts` | `loadDepartments`, `loadMunicipalities`, `loadProgramCatalog` |
+| Prueba | `testService.ts` | `getQuestions`, `startAttempt`, `submitAttempt` |
+| Resultados | `resultsService.ts` | `getMyResults`, `getResultByTest`, `getMyTestHistory` |
+| Admin | `adminService.ts` | Dashboard, usuarios, roles, catálogos, logs, pacho upload |
+| PDF | `pdfService.ts` | Generación client-side de PDFs de resultados y reportes |
 
-La sesión tenía acceso al conector de Figma, pero no fue posible localizar el archivo `USB Vocacional` automáticamente porque en el repo/documentos no venía URL ni `fileKey`, y el MCP disponible no expone búsqueda por nombre de archivo. El frontend quedó listo para ajustar fidelidad visual exacta en cuanto se comparta ese enlace específico.
+### Endpoints del backend consumidos
+
+```
+POST   /api/v1/auth/login
+POST   /api/v1/auth/register
+POST   /api/v1/auth/forgot-password
+POST   /api/v1/auth/reset-password
+GET    /api/v1/usuarios/me
+PUT    /api/v1/usuarios/me/perfil
+POST   /api/v1/usuarios/me/cambiar-contrasena
+DELETE /api/v1/usuarios/me
+GET    /api/v1/departamentos
+GET    /api/v1/departamentos/{id}/municipios
+GET    /api/v1/catalogos/programas
+GET    /api/v1/preguntas/para-prueba
+POST   /api/v1/pruebas
+GET    /api/v1/pruebas/mis-pruebas
+GET    /api/v1/pruebas/{id}/resultado
+GET    /api/v1/dashboard
+GET    /api/v1/usuarios
+PATCH  /api/v1/usuarios/{id}/rol
+POST   /api/v1/usuarios/{id}/restablecer-contrasena
+GET    /api/v1/roles
+GET    /api/v1/roles/{id}/actividades
+PUT    /api/v1/roles/{id}/actividades
+GET    /api/v1/areas
+POST   /api/v1/areas
+PUT    /api/v1/areas/{id}
+DELETE /api/v1/areas/{id}
+PATCH  /api/v1/areas/{id}/reactivar
+POST   /api/v1/areas/{id}/imagen-pacho
+GET    /api/v1/programas
+POST   /api/v1/programas
+PUT    /api/v1/programas/{id}
+DELETE /api/v1/programas/{id}
+PATCH  /api/v1/programas/{id}/reactivar
+GET    /api/v1/logs
+```
+
+---
+
+## Estado global (stores)
+
+### `authStore` (Zustand + persist)
+- **Clave**: `usb-vocacional-auth`
+- **Estado**: `sessionUser` (perfil del usuario), `accessToken` (JWT)
+- **Acciones**: `signIn`, `register`, `updateSessionUser`, `signOut`
+
+### `testSessionStore` (Zustand + persist)
+- **Clave**: `usb-vocacional-test`
+- **Estado**: `attemptId`, `startedAt`, `expiresAt`, `questions`, `answers`, `currentIndex`
+- **Acciones**: `initialize`, `answerQuestion`, `setCurrentIndex`, `acknowledgeIntro`, `clear`
+
+---
+
+## Estilos y diseño
+
+- **CSS global** en `src/styles/index.css` (~5900 líneas).
+- **Fuentes**: Montserrat (texto) y Poppins (títulos).
+- **Paleta institucional USB**:
+
+| Variable | Color | Uso |
+|---|---|---|
+| `--usb-orange` | `#EF7D00` | Color primario, botones, acentos |
+| `--usb-blue` | `#181E7B` | Color secundario, headers |
+| `--usb-black` | `#1D1D1B` | Texto principal |
+| `--usb-cream` | `#FFF8F1` | Fondos claros |
+| `--usb-sand` | `#F6EFE7` | Fondos alternos |
+| `--usb-success` | `#147A50` | Estados de éxito |
+| `--usb-danger` | `#9F2D20` | Estados de error, zona de peligro |
+
+- Diseño **responsive** con breakpoints en 720px y 900px.
+- Componentes con convención BEM: `prefijo__elemento--modificador`.
+- Botones principales con estilo pill (`border-radius: 999px`).
+
+---
+
+## Scripts disponibles
+
+| Comando | Descripción |
+|---|---|
+| `pnpm dev` | Servidor de desarrollo con hot reload |
+| `pnpm build` | Compilación de producción (`tsc -b && vite build`) |
+| `pnpm preview` | Previsualización de la build de producción |
+| `pnpm lint` | Verificación de código con ESLint |
+
+---
+
+## Estructura de tipos
+
+El directorio `src/types/index.ts` define los contratos TypeScript principales:
+
+| Tipo | Descripción |
+|---|---|
+| `UserProfile` | Perfil completo del usuario (31 campos) |
+| `UserRole` | `'student' \| 'administrator' \| 'root'` |
+| `TestQuestion` | Pregunta con opciones de respuesta |
+| `TestAttempt` | Intento de prueba con metadatos |
+| `VocationalResult` | Resultado vocacional con áreas y programas |
+| `CareerRecommendation` | Programa recomendado con afinidad y justificación |
+| `AdminDashboard` | Datos del panel administrativo |
+| `AdminCatalogs` | Catálogos de áreas, programas y pruebas |
+| `RoleActivity` | Asignación de permisos por rol |
+| `ApiEnvelope<T>` | Envelope estándar de respuestas API |
+| `ApiError` | Error estructurado con código y campos |
+
+---
+
+## Licencia
+
+Proyecto académico — Universidad San Buenaventura Bogotá, 2026.
