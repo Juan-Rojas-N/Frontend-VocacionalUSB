@@ -4218,6 +4218,67 @@ input:disabled {
   color: #922b20;
 }
 
+/* Zona de peligro dentro del perfil */
+.profile-danger-zone {
+  margin: 0 30px 30px;
+  padding: 20px 24px;
+  border: 1px solid #f5c6c2;
+  border-radius: 18px;
+  background: #fdf2f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.profile-danger-zone__copy {
+  display: grid;
+  gap: 2px;
+}
+
+.profile-danger-zone__copy span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #b42318;
+}
+
+.profile-danger-zone__copy strong {
+  font-size: 1.05rem;
+  color: #7a1b12;
+}
+
+.profile-danger-zone__copy p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #922b20;
+}
+
+.profile-danger-zone__btn {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 1px solid #dc3545;
+  border-radius: 999px;
+  background: #dc3545;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.profile-danger-zone__btn:hover {
+  background: #c82333;
+  border-color: #bd2130;
+}
+
+.profile-danger-zone__btn:active {
+  background: #b12a27;
+  border-color: #a71d2a;
+}
+
 /* Revisión y envío de prueba */
 .revision-resumen {
   display: grid;
@@ -5490,6 +5551,17 @@ input:disabled {
   .profile-card__notice {
     margin-left: 18px;
     margin-right: 18px;
+  }
+
+  .profile-danger-zone {
+    margin-left: 18px;
+    margin-right: 18px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-danger-zone__btn {
+    width: 100%;
   }
 
   .profile-grid,

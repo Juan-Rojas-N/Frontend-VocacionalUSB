@@ -528,27 +528,24 @@ export function ProfilePage() {
             {passwordStatus.message}
           </p>
         ) : null}
-      </section>
 
-      {sessionUser?.role !== 'root' ? (
-        <section className="profile-card" style={{ marginTop: '1.5rem' }}>
-          <div className="profile-card__hero">
-            <div className="profile-card__hero-copy">
+        {sessionUser?.role !== 'root' ? (
+          <div className="profile-danger-zone">
+            <div className="profile-danger-zone__copy">
               <span>Zona de peligro</span>
-              <h2>Eliminar cuenta</h2>
-              <p>Esta acción es permanente y no se puede deshacer.</p>
+              <strong>Eliminar cuenta</strong>
+              <p>Esta acción es permanente y no se puede deshacer. Se eliminarán todos tus datos.</p>
             </div>
             <button
               type="button"
-              className="profile-card__edit"
-              style={{ background: '#dc3545', borderColor: '#dc3545' }}
+              className="profile-danger-zone__btn"
               onClick={() => void handleDeleteAccount()}
             >
               Eliminar cuenta
             </button>
           </div>
-        </section>
-      ) : null}
+        ) : null}
+      </section>
     </div>
   )
 }
