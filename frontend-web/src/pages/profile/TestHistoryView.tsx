@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { resultsService } from '../../services/resultsService'
 import type { BackendPrueba } from '../../types'
@@ -6,7 +6,7 @@ import { APP_ROUTES } from '../../constants'
 
 export function TestHistoryView() {
   const [tests, setTests] = useState<BackendPrueba[]>([])
-  const [statusMessage, setStatusMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
@@ -27,16 +27,32 @@ export function TestHistoryView() {
           )
         }
       })
+      .finally(() => {
+        if (active) setIsLoading(false)
+      })
 
     return () => {
       active = false
     }
   }, [])
 
+  const stats = useMemo(() => {
+    const completed = tests.filter((t) => t.activo)
+    const totalTime = tests.reduce((sum, t) => sum + (t.tiempoInvertido ?? 0), 0)
+    const avgTime = completed.length > 0 ? Math.round(totalTime / completed.length) : 0
+    return {
+      total: tests.length,
+      completed: completed.length,
+      avgMinutes: Math.floor(avgTime / 60),
+      avgSeconds: avgTime % 60,
+    }
+  }, [tests])
+
   function formatDuration(seconds: number | null): string {
-    if (seconds == null) return 'Sin registrar'
+    if (seconds == null) return '--'
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
+    if (mins === 0) return `${secs}s`
     return `${mins}m ${secs}s`
   }
 
@@ -45,14 +61,34 @@ export function TestHistoryView() {
     try {
       return new Date(iso).toLocaleDateString('es-CO', {
         year: 'numeric',
-        month: 'short',
+        month: 'long',
         day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
       })
     } catch {
       return iso
     }
+  }
+
+  function formatTime(iso: string | null): string {
+    if (!iso) return ''
+    try {
+      return new Date(iso).toLocaleTimeString('es-CO', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    } catch {
+      return ''
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="resultado-vocacional">
+        <section className="resultado-vocacional__panel">
+          <div className="loading-state">Cargando historial de pruebas...</div>
+        </section>
+      </div>
+    )
   }
 
   if (errorMessage && tests.length === 0) {
@@ -76,53 +112,89 @@ export function TestHistoryView() {
       <section className="resultado-vocacional__panel">
         <header className="resultado-vocacional__encabezado">
           <h1>Historial de pruebas</h1>
-          <p>Todas las pruebas que has realizado aparecen aquí.</p>
+          <p>Revisa todas las pruebas vocacionales que has realizado en el sistema.</p>
         </header>
 
         {tests.length === 0 ? (
           <div className="introduccion-prueba__alerta">
-            <strong>No tienes pruebas registradas.</strong>
+            <strong>Aún no tienes pruebas registradas.</strong>
             <p>
               <Link to={APP_ROUTES.testIntro}>Realiza tu primera prueba</Link> para ver tus
               resultados aquí.
             </p>
           </div>
         ) : (
-          <div className="carreras-recomendadas__lista">
-            {tests.map((test) => (
-              <article
-                key={test.id}
-                className={`carreras-recomendadas__tarjeta ${!test.activo ? 'admin-catalog-list__inactive' : ''}`}
-              >
-                <div className="carreras-recomendadas__contenido">
-                  <strong>Prueba #{test.id}</strong>
-                  <span>
-                    {formatDate(test.fecha)} · {formatDuration(test.tiempoInvertido)} ·{' '}
-                    {test.activo ? 'Completada' : 'Inactiva'}
-                  </span>
-                  {test.versionPrueba ? (
-                    <p>Versión: {test.versionPrueba}</p>
-                  ) : null}
-                  {test.satisfaccion != null ? (
-                    <p>Satisfacción: {test.satisfaccion}/5</p>
-                  ) : null}
-                </div>
-                <div className="carreras-recomendadas__acciones">
-                  <Link
-                    to={`${APP_ROUTES.results}/${test.id}`}
-                    className="carreras-recomendadas__enlace"
-                  >
-                    Ver resultado
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+          <>
+            <div className="historial-stats">
+              <div className="historial-stats__card">
+                <span className="historial-stats__label">Pruebas realizadas</span>
+                <strong className="historial-stats__value">{stats.total}</strong>
+              </div>
+              <div className="historial-stats__card">
+                <span className="historial-stats__label">Completadas</span>
+                <strong className="historial-stats__value">{stats.completed}</strong>
+              </div>
+              <div className="historial-stats__card">
+                <span className="historial-stats__label">Tiempo promedio</span>
+                <strong className="historial-stats__value">
+                  {stats.completed > 0 ? `${stats.avgMinutes}m ${stats.avgSeconds}s` : '--'}
+                </strong>
+              </div>
+            </div>
 
-        {statusMessage ? (
-          <p className="resumen-resultado__estado">{statusMessage}</p>
-        ) : null}
+            <div className="historial-lista">
+              {[...tests]
+                .sort(
+                  (a, b) =>
+                    new Date(b.fecha ?? 0).getTime() - new Date(a.fecha ?? 0).getTime(),
+                )
+                .map((test, index) => (
+                  <article
+                    key={test.id}
+                    className={`historial-card ${!test.activo ? 'historial-card--inactiva' : ''}`}
+                  >
+                    <div className="historial-card__numero">
+                      {stats.total - index}
+                    </div>
+                    <div className="historial-card__contenido">
+                      <div className="historial-card__fila">
+                        <strong className="historial-card__fecha">
+                          {formatDate(test.fecha)}
+                        </strong>
+                        <span className="historial-card__hora">{formatTime(test.fecha)}</span>
+                      </div>
+                      <div className="historial-card__detalles">
+                        <span className="historial-card__badge">
+                          {test.activo ? 'Completada' : 'Inactiva'}
+                        </span>
+                        {test.versionPrueba ? (
+                          <span className="historial-card__meta">
+                            Versión {test.versionPrueba}
+                          </span>
+                        ) : null}
+                        <span className="historial-card__meta">
+                          Duración: {formatDuration(test.tiempoInvertido)}
+                        </span>
+                        {test.satisfaccion != null ? (
+                          <span className="historial-card__meta">
+                            Satisfacción: {test.satisfaccion}/5
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="historial-card__acciones">
+                      <Link
+                        to={`${APP_ROUTES.results}/${test.id}`}
+                        className="historial-card__boton"
+                      >
+                        Ver resultado
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+            </div>
+          </>
+        )}
       </section>
     </div>
   )

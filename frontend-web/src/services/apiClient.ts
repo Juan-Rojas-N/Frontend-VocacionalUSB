@@ -92,7 +92,7 @@ async function apiRequest<T>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
-  if (response.status === 401) {
+  if (response.status === 401 && path === '/usuarios/me') {
     clearAccessToken()
   }
 

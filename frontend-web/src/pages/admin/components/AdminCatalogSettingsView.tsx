@@ -60,6 +60,7 @@ export function AdminCatalogSettingsView() {
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [uploadingAreaId, setUploadingAreaId] = useState<string | null>(null)
+  const [editingPachoPath, setEditingPachoPath] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -120,6 +121,7 @@ export function AdminCatalogSettingsView() {
     setFormValues(EMPTY_FORM)
     setFormErrors({})
     setStatus(null)
+    setEditingPachoPath(null)
   }
 
   function openEditForm(item: AdminAreaCatalogItem | AdminProgramCatalogItem | AdminTestCatalogItem) {
@@ -136,6 +138,7 @@ export function AdminCatalogSettingsView() {
         description: area.description,
         profile: area.profile,
       })
+      setEditingPachoPath(area.pachoPath ?? null)
     } else if (activeTab === 'programs') {
       const program = item as AdminProgramCatalogItem
       setFormValues({
@@ -266,6 +269,7 @@ export function AdminCatalogSettingsView() {
 
     setFormMode(null)
     setFormValues(EMPTY_FORM)
+    setEditingPachoPath(null)
     setStatus(null)
   }
 
@@ -334,7 +338,17 @@ export function AdminCatalogSettingsView() {
     try {
       setUploadingAreaId(areaId)
       setStatus(null)
-      await adminService.uploadPachoImage(areaId, file)
+      const response = await adminService.uploadPachoImage(areaId, file)
+      setEditingPachoPath(response.data.pachoPath)
+      setCatalogs((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          areas: prev.areas.map((a) =>
+            a.id === areaId ? { ...a, pachoPath: response.data.pachoPath } : a
+          ),
+        }
+      })
       setStatus({
         tone: 'success',
         message: 'Imagen de Pacho actualizada correctamente.',
@@ -352,9 +366,9 @@ export function AdminCatalogSettingsView() {
     }
   }
 
-  function triggerPachoUpload(areaId: string) {
-    if (!fileInputRef.current) return
-    fileInputRef.current.dataset.areaId = areaId
+  function triggerPachoUpload() {
+    if (!fileInputRef.current || !formValues.id) return
+    fileInputRef.current.dataset.areaId = formValues.id
     fileInputRef.current.click()
   }
 
@@ -493,6 +507,27 @@ export function AdminCatalogSettingsView() {
                     />
                     {formErrors.profile ? <small className="form-field__error">{formErrors.profile}</small> : null}
                   </label>
+                  {formMode === 'edit' ? (
+                    <div className="admin-catalog-form__full admin-catalog-form__pacho">
+                      <strong>Imagen de Pacho</strong>
+                      {editingPachoPath ? (
+                        <img
+                          src={`${import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/v1\/?$/, '') ?? 'http://localhost:8088'}/uploads/pacho/${editingPachoPath}`}
+                          alt={`Pacho de ${formValues.name}`}
+                          className="admin-catalog-form__pacho-img"
+                        />
+                      ) : (
+                        <p className="admin-catalog-form__pacho-empty">Sin imagen asignada</p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={triggerPachoUpload}
+                        disabled={uploadingAreaId === formValues.id}
+                      >
+                        {uploadingAreaId === formValues.id ? 'Subiendo...' : editingPachoPath ? 'Cambiar imagen' : 'Subir imagen'}
+                      </button>
+                    </div>
+                  ) : null}
                 </>
               ) : null}
 
@@ -611,15 +646,6 @@ export function AdminCatalogSettingsView() {
                     ) : null}
                   </div>
                   <div className="admin-catalog-list__actions">
-                    {area ? (
-                      <button
-                        type="button"
-                        onClick={() => triggerPachoUpload(item.id)}
-                        disabled={uploadingAreaId === item.id}
-                      >
-                        {uploadingAreaId === item.id ? 'Subiendo...' : 'Subir Pacho'}
-                      </button>
-                    ) : null}
                     <button type="button" onClick={() => openEditForm(item)}>Editar</button>
                     <button type="button" onClick={() => toggleActive(item.id, item.active)}>
                       {item.active ? 'Desactivar' : 'Reactivar'}

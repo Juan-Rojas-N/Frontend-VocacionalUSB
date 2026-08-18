@@ -41,9 +41,6 @@ const ProfilePage = lazy(async () => ({
 const TestHistoryView = lazy(async () => ({
   default: (await import('../pages/profile/TestHistoryView')).TestHistoryView,
 }))
-const AdminLogsView = lazy(async () => ({
-  default: (await import('../pages/admin/components/AdminLogsView')).AdminLogsView,
-}))
 const NotFoundPage = lazy(async () => ({
   default: (await import('../pages/NotFoundPage')).NotFoundPage,
 }))
@@ -109,7 +106,6 @@ export const router = createBrowserRouter(
           element: <RouteGuard allowedRoles={['administrator', 'root']} />,
           children: [
             { path: APP_ROUTES.admin, element: withSuspense(<AdminDashboardPage />) },
-            { path: APP_ROUTES.adminLogs, element: withSuspense(<AdminLogsView />) },
           ],
         },
         { path: '*', element: withSuspense(<NotFoundPage />) },

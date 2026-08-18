@@ -38,6 +38,7 @@ interface BackendAreaResponse {
   perfilPredonimante?: string | null
   descripcionArea?: string | null
   pathLogo?: string | null
+  pachoPath?: string | null
   activo?: boolean
 }
 
@@ -515,6 +516,7 @@ export const adminService = {
         name: area.nombreArea,
         description: area.descripcionArea ?? '',
         profile: area.perfilPredonimante ?? '',
+        pachoPath: area.pachoPath ?? null,
         active: area.activo ?? true,
       })),
       programs: (programsResponse?.data ?? []).map((program) => ({

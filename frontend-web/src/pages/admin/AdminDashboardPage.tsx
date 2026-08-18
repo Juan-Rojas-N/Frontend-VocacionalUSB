@@ -6,6 +6,7 @@ import type { AdminDashboard, AdminResultRecord } from '../../types'
 import { getUserRoleLabel } from '../../utils/roles'
 import { buildOverviewCsv, downloadTextFile } from '../../utils/reports'
 import { AdminCatalogSettingsView } from './components/AdminCatalogSettingsView'
+import { AdminLogsView } from './components/AdminLogsView'
 import { AdminOverviewView } from './components/AdminOverviewView'
 import { AdminReportsView } from './components/AdminReportsView'
 import { AdminResultsView } from './components/AdminResultsView'
@@ -13,7 +14,7 @@ import { RootRoleActivitiesView } from './components/RootRoleActivitiesView'
 import { RootUserRolesView } from './components/RootUserRolesView'
 
 type AdminView = 'overview' | 'results' | 'reports' | 'catalogs'
-type RootView = 'overview' | 'role-activities' | 'user-roles' | 'catalogs'
+type RootView = 'overview' | 'role-activities' | 'user-roles' | 'catalogs' | 'logs'
 type DashboardView = AdminView | RootView
 
 interface ResultCard {
@@ -40,6 +41,7 @@ const ROOT_NAV_ITEMS: Array<{ id: RootView; label: string }> = [
   { id: 'role-activities', label: 'Roles - Actividades' },
   { id: 'user-roles', label: 'Usuarios - Modificar rol' },
   { id: 'catalogs', label: 'Configuración' },
+  { id: 'logs', label: 'Logs del sistema' },
 ]
 
 export function AdminDashboardPage() {
@@ -204,6 +206,8 @@ export function AdminDashboardPage() {
             {isRoot && activeView === 'role-activities' ? <RootRoleActivitiesView /> : null}
 
             {isRoot && activeView === 'user-roles' ? <RootUserRolesView /> : null}
+
+            {isRoot && activeView === 'logs' ? <AdminLogsView /> : null}
           </div>
         </div>
       </section>

@@ -44,11 +44,6 @@ export function UserDropdown({ open, onClose }: UserDropdownProps) {
           Administración
         </Link>
       ) : null}
-      {sessionUser.role === 'root' ? (
-        <Link to={APP_ROUTES.adminLogs} className="user-dropdown__item" onClick={onClose}>
-          Logs del sistema
-        </Link>
-      ) : null}
       <button
         type="button"
         className="user-dropdown__item user-dropdown__item--button"

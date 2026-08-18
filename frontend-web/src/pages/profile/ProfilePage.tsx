@@ -55,12 +55,11 @@ export function ProfilePage() {
   const sessionUser = useAuthStore((state) => state.sessionUser)
   const updateSessionUser = useAuthStore((state) => state.updateSessionUser)
   const signOut = useAuthStore((state) => state.signOut)
-  const [isEditing, setIsEditing] = useState(false)
+  const [activeForm, setActiveForm] = useState<'profile' | 'password' | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null,
   )
-  const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [passwordStatus, setPasswordStatus] = useState<{ tone: 'success' | 'error'; message: string } | null>(
     null,
@@ -174,7 +173,7 @@ export function ProfilePage() {
       })
       updateSessionUser(updated)
       reset(toFormValues(updated))
-      setIsEditing(false)
+      setActiveForm(null)
       setStatus({ tone: 'success', message: 'Perfil actualizado correctamente.' })
     } catch (error) {
       setStatus({
@@ -191,7 +190,7 @@ export function ProfilePage() {
       return
     }
     reset(toFormValues(sessionUser))
-    setIsEditing(false)
+    setActiveForm(null)
     setStatus(null)
   }
 
@@ -204,7 +203,7 @@ export function ProfilePage() {
         passwordNueva: values.newPassword,
       })
       resetPassword({ currentPassword: '', newPassword: '', confirmPassword: '' })
-      setShowPasswordForm(false)
+      setActiveForm(null)
       setPasswordStatus({ tone: 'success', message: 'Contraseña cambiada correctamente.' })
     } catch (error) {
       setPasswordStatus({
@@ -245,6 +244,9 @@ export function ProfilePage() {
     sessionUser.municipalityName,
   )
 
+  const isEditing = activeForm === 'profile'
+  const showPasswordForm = activeForm === 'password'
+
   return (
     <div className="profile-shell">
       <section className="profile-card">
@@ -257,18 +259,34 @@ export function ProfilePage() {
             <h1>{sessionUser.fullName}</h1>
             <p>Consulta y mantén actualizada tu información de contacto.</p>
           </div>
-          {!isEditing ? (
-            <button
-              type="button"
-              className="profile-card__edit"
-              onClick={() => {
-                setStatus(null)
-                setIsEditing(true)
-              }}
-            >
-              Modificar datos
-            </button>
-          ) : null}
+          <div className="profile-card__hero-actions">
+            {!isEditing && !showPasswordForm ? (
+              <>
+                <button
+                  type="button"
+                  className="profile-card__edit"
+                  onClick={() => {
+                    setStatus(null)
+                    setPasswordStatus(null)
+                    setActiveForm('profile')
+                  }}
+                >
+                  Modificar datos
+                </button>
+                <button
+                  type="button"
+                  className="profile-card__edit"
+                  onClick={() => {
+                    setPasswordStatus(null)
+                    setStatus(null)
+                    setActiveForm('password')
+                  }}
+                >
+                  Cambiar contraseña
+                </button>
+              </>
+            ) : null}
+          </div>
         </div>
 
         <div className="profile-card__notice">
@@ -425,37 +443,6 @@ export function ProfilePage() {
           </div>
         )}
 
-        {status ? (
-          <p
-            className={`profile-card__status profile-card__status--${status.tone}`}
-            role={status.tone === 'error' ? 'alert' : 'status'}
-          >
-            {status.message}
-          </p>
-        ) : null}
-      </section>
-
-      <section className="profile-card" style={{ marginTop: '1.5rem' }}>
-        <div className="profile-card__hero">
-          <div className="profile-card__hero-copy">
-            <span>Seguridad</span>
-            <h2>Cambiar contraseña</h2>
-            <p>Actualiza tu contraseña periódicamente para mantener tu cuenta segura.</p>
-          </div>
-          {!showPasswordForm ? (
-            <button
-              type="button"
-              className="profile-card__edit"
-              onClick={() => {
-                setPasswordStatus(null)
-                setShowPasswordForm(true)
-              }}
-            >
-              Cambiar contraseña
-            </button>
-          ) : null}
-        </div>
-
         {showPasswordForm ? (
           <form className="profile-form" onSubmit={onSubmitPassword} noValidate>
             <div className="profile-form__grid">
@@ -511,7 +498,7 @@ export function ProfilePage() {
                 className="profile-form__cancel"
                 onClick={() => {
                   resetPassword({ currentPassword: '', newPassword: '', confirmPassword: '' })
-                  setShowPasswordForm(false)
+                  setActiveForm(null)
                   setPasswordStatus(null)
                 }}
               >
@@ -522,6 +509,15 @@ export function ProfilePage() {
               </button>
             </div>
           </form>
+        ) : null}
+
+        {status ? (
+          <p
+            className={`profile-card__status profile-card__status--${status.tone}`}
+            role={status.tone === 'error' ? 'alert' : 'status'}
+          >
+            {status.message}
+          </p>
         ) : null}
 
         {passwordStatus ? (

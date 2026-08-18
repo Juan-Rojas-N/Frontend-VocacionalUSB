@@ -4138,6 +4138,14 @@ input:disabled {
   white-space: nowrap;
 }
 
+.profile-card__hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: auto;
+  align-items: flex-end;
+}
+
 .profile-card__notice {
   margin: 26px 30px 0;
   padding: 16px 18px;
@@ -5327,6 +5335,32 @@ input:disabled {
   grid-column: 1 / -1;
 }
 
+.admin-catalog-form__pacho {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #ddd2c4;
+  border-radius: 12px;
+  background: #faf8f5;
+}
+
+.admin-catalog-form__pacho-img {
+  max-width: 180px;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid #e5e0da;
+  background: #fff;
+  padding: 6px;
+}
+
+.admin-catalog-form__pacho-empty {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
 .admin-catalog-form__actions {
   justify-content: flex-end;
   margin-top: 16px;
@@ -5441,6 +5475,11 @@ input:disabled {
     margin-left: 0;
   }
 
+  .profile-card__hero-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
   .profile-grid,
   .profile-form,
   .profile-card__status {
@@ -5529,6 +5568,176 @@ input:disabled {
   .admin-report-actions,
   .admin-report-actions button {
     width: 100%;
+  }
+}
+
+.historial-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.historial-stats__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 14px;
+  border-radius: 18px;
+  background: #fcfcfc;
+  border: 1px solid #ece6db;
+  box-shadow: 0 2px 6px rgba(29, 29, 27, 0.06);
+}
+
+.historial-stats__label {
+  color: #7a746c;
+  font-size: 13px;
+}
+
+.historial-stats__value {
+  color: #141414;
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.historial-lista {
+  display: grid;
+  gap: 12px;
+}
+
+.historial-card {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fcfcfc;
+  border: 1px solid #ece6db;
+  border-left: 4px solid #181e7b;
+  box-shadow: 0 2px 6px rgba(29, 29, 27, 0.06);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.historial-card:hover {
+  box-shadow: 0 6px 14px rgba(29, 29, 27, 0.12);
+  transform: translateY(-1px);
+}
+
+.historial-card--inactiva {
+  border-left-color: #b0a99e;
+  opacity: 0.7;
+}
+
+.historial-card__numero {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #181e7b;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.historial-card--inactiva .historial-card__numero {
+  background: #b0a99e;
+}
+
+.historial-card__contenido {
+  min-width: 0;
+}
+
+.historial-card__fila {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.historial-card__fecha {
+  color: #141414;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.historial-card__hora {
+  color: #7a746c;
+  font-size: 13px;
+}
+
+.historial-card__detalles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.historial-card__badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e4f5e0;
+  color: #1a6b12;
+}
+
+.historial-card--inactiva .historial-card__badge {
+  background: #f2eadb;
+  color: #7a746c;
+}
+
+.historial-card__meta {
+  color: #6b655e;
+  font-size: 13px;
+}
+
+.historial-card__acciones {
+  display: flex;
+  align-items: center;
+}
+
+.historial-card__boton {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #ef7d00;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.historial-card__boton:hover {
+  background: #d66f00;
+}
+
+@media (max-width: 720px) {
+  .historial-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .historial-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .historial-card__numero {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .historial-card__acciones {
+    justify-content: flex-start;
   }
 }
 

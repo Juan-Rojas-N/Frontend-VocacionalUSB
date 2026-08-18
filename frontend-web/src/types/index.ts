@@ -322,6 +322,7 @@ export interface AdminAreaCatalogItem {
   name: string
   description: string
   profile: string
+  pachoPath?: string | null
   active: boolean
 }
 
