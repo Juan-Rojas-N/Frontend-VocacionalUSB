@@ -13,6 +13,7 @@ interface TestSessionState {
   answers: Record<string, number>
   currentIndex: number
   introAcknowledged: boolean
+  satisfaccion: number | null
   initialize: (payload: {
     attemptId: string
     startedAt: string
@@ -25,6 +26,7 @@ interface TestSessionState {
   answerQuestion: (questionId: string, value: number) => void
   setCurrentIndex: (value: number) => void
   acknowledgeIntro: () => void
+  setSatisfaccion: (value: number | null) => void
   clear: () => void
 }
 
@@ -41,19 +43,24 @@ export const useTestSessionStore = create<TestSessionState>()(
       answers: {},
       currentIndex: 0,
       introAcknowledged: false,
+      satisfaccion: null,
+      setSatisfaccion(value) {
+        set({ satisfaccion: value })
+      },
       initialize(payload) {
-        set({
-          attemptId: payload.attemptId,
-          startedAt: payload.startedAt,
-          expiresAt: new Date(payload.expiresAt).getTime(),
-          versionLabel: payload.versionLabel ?? null,
-          attemptLabel: payload.attemptLabel ?? null,
-          audienceLabel: payload.audienceLabel ?? null,
-          questions: payload.questions,
-          answers: {},
-          currentIndex: 0,
-          introAcknowledged: false,
-        })
+    set({
+      attemptId: payload.attemptId,
+      startedAt: payload.startedAt,
+      expiresAt: new Date(payload.expiresAt).getTime(),
+      versionLabel: payload.versionLabel ?? null,
+      attemptLabel: payload.attemptLabel ?? null,
+      audienceLabel: payload.audienceLabel ?? null,
+      questions: payload.questions,
+      answers: {},
+      currentIndex: 0,
+      introAcknowledged: false,
+      satisfaccion: null,
+    })
       },
       answerQuestion(questionId, value) {
         set((state) => ({
@@ -81,6 +88,7 @@ export const useTestSessionStore = create<TestSessionState>()(
           answers: {},
           currentIndex: 0,
           introAcknowledged: false,
+          satisfaccion: null,
         })
       },
     }),

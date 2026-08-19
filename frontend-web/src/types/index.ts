@@ -193,6 +193,7 @@ export interface TestSubmissionPayload {
   submittedAt: string
   answers: Record<string, number>
   questions: TestQuestion[]
+  satisfaccion: number | null
 }
 
 export interface CareerRecommendation {

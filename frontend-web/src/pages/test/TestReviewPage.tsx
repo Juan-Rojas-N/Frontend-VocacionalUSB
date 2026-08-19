@@ -15,12 +15,15 @@ export function TestReviewPage() {
     versionLabel,
     attemptLabel,
     audienceLabel,
+    satisfaccion,
     setCurrentIndex,
+    setSatisfaccion,
     clear,
   } = useTestSessionStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [confirmationOpen, setConfirmationOpen] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [hoveredStar, setHoveredStar] = useState<number | null>(null)
   const isFinishingRef = useRef(false)
   const errorRef = useRef<HTMLParagraphElement>(null)
 
@@ -88,6 +91,7 @@ export function TestReviewPage() {
         submittedAt: new Date().toISOString(),
         answers,
         questions,
+        satisfaccion,
       })
       isFinishingRef.current = true
       setConfirmationOpen(false)
@@ -286,6 +290,42 @@ export function TestReviewPage() {
           Has respondido las {questions.length} preguntas. Al confirmar, el intento se enviará y ya
           no podrás modificar estas respuestas.
         </p>
+
+        <div className="satisfaccion-modal">
+          <span className="satisfaccion-modal__label">¿Cómo fue tu experiencia con la prueba?</span>
+          <div className="satisfaccion-modal__stars" role="radiogroup" aria-label="Calificación de satisfacción">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                role="radio"
+                aria-checked={satisfaccion === star}
+                aria-label={`${star} ${star === 1 ? 'estrella' : 'estrellas'}`}
+                className={[
+                  'satisfaccion-modal__star',
+                  satisfaccion !== null && satisfaccion >= star ? 'satisfaccion-modal__star--active' : '',
+                  hoveredStar !== null && hoveredStar >= star ? 'satisfaccion-modal__star--hover' : '',
+                ].join(' ')}
+                onMouseEnter={() => setHoveredStar(star)}
+                onMouseLeave={() => setHoveredStar(null)}
+                onClick={() => setSatisfaccion(star)}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+          {satisfaccion !== null ? (
+            <span className="satisfaccion-modal__hint">
+              {satisfaccion <= 2
+                ? 'Lamentamos tu experiencia. Trabajaremos para mejorar.'
+                : satisfaccion === 3
+                  ? '¡Gracias! Tomaremos tu opinión en cuenta.'
+                  : '¡Nos alegra que te haya gustado!'}
+            </span>
+          ) : (
+            <span className="satisfaccion-modal__hint">Opcional: califica del 1 al 5</span>
+          )}
+        </div>
         <div className="institutional-modal__actions institutional-modal__actions--row">
           <button
             type="button"

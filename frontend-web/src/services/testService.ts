@@ -79,7 +79,7 @@ export const testService = {
     const response = await api.post<BackendResultado>('/pruebas', {
       tiempoInvertido,
       versionPrueba: 'v1.1',
-      satisfaccion: null,
+      satisfaccion: payload.satisfaccion,
       respuestas,
     })
 
