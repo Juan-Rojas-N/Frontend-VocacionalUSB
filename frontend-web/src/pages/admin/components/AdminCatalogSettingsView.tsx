@@ -445,21 +445,16 @@ export function AdminCatalogSettingsView() {
             <strong>{TAB_LABELS[activeTab]}</strong>
             <span>Crear, editar y cambiar el estado de los registros del borrador.</span>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div className="admin-catalog-panel__toolbar-actions">
             <input
               type="text"
               placeholder={`Buscar ${activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'prueba'}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                padding: '0.4rem 0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem',
-                width: '200px',
-              }}
+              className="admin-catalog-panel__search"
             />
-            <button type="button" onClick={openCreateForm}>
+            <button type="button" onClick={openCreateForm} className="admin-catalog-panel__create-btn">
+              <span className="admin-catalog-panel__create-icon" aria-hidden="true">+</span>
               Crear {activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'prueba'}
             </button>
           </div>
