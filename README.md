@@ -179,7 +179,8 @@ src/
 - Navegación libre entre preguntas con sidebar de progreso.
 - Guard automático de respuestas en el store.
 - Validación de completitud antes de enviar.
-- Envío al backend con cálculo de tiempo invertido.
+- **Calificación de satisfacción (1-5 estrellas)** en el modal de confirmación antes de enviar la prueba (opcional).
+- Envío al backend con cálculo de tiempo invertido y valor de satisfacción.
 
 ### 3. Resultados vocacionales
 - Área predominante con porcentaje de afinidad.
@@ -191,8 +192,9 @@ src/
 ### 4. Perfil de usuario
 - Visualización de datos de cuenta (correo, documento, teléfono, municipio, departamento).
 - Edición de perfil con validación por Zod.
-- Cambio de contraseña con política de seguridad (mínimo 8 caracteres, mayúscula y número).
-- Eliminación de cuenta con doble confirmación (oculto para ROOT).
+- **Cambio de contraseña** con política de seguridad (mínimo 8 caracteres, mayúscula y número) desde el perfil.
+- **Eliminación de cuenta** con doble confirmación (zona de peligro integrada en el perfil; oculto para ROOT).
+- **Historial de pruebas** con estadísticas resumidas (total de pruebas, última fecha, área predominante).
 
 ### 5. Panel administrativo
 
@@ -201,11 +203,12 @@ src/
 - **Resultados**: listado de resultados con filtros.
 - **Reportes**: generación de reportes por filtros con exportación CSV.
 - **Configuración**: CRUD de áreas, programas y pruebas con modo borrador y guardado por lotes.
+- **Subida de imagen pacho**: carga de imagen por área dentro del formulario de edición, con vista previa.
 
 #### ROOT (adicional)
 - **Roles - Actividades**: asignación de permisos por rol (tabla de roles vs endpoints).
-- **Usuarios - Modificar rol**: cambio de rol de usuarios, restablecimiento de contraseña.
-- **Logs del sistema**: visualización de actividad auditada del sistema.
+- **Usuarios - Modificar rol**: cambio de rol de usuarios, restablecimiento de contraseña (usa número de documento).
+- **Logs del sistema**: visualización de actividad auditada del sistema integrada como pestaña en el dashboard.
 
 ---
 
@@ -273,14 +276,14 @@ GET    /api/v1/logs
 
 ### `testSessionStore` (Zustand + persist)
 - **Clave**: `usb-vocacional-test`
-- **Estado**: `attemptId`, `startedAt`, `expiresAt`, `questions`, `answers`, `currentIndex`
-- **Acciones**: `initialize`, `answerQuestion`, `setCurrentIndex`, `acknowledgeIntro`, `clear`
+- **Estado**: `attemptId`, `startedAt`, `expiresAt`, `questions`, `answers`, `currentIndex`, `satisfaccion`
+- **Acciones**: `initialize`, `answerQuestion`, `setCurrentIndex`, `acknowledgeIntro`, `setSatisfaccion`, `clear`
 
 ---
 
 ## Estilos y diseño
 
-- **CSS global** en `src/styles/index.css` (~5900 líneas).
+- **CSS global** en `src/styles/index.css` (~6000 líneas).
 - **Fuentes**: Montserrat (texto) y Poppins (títulos).
 - **Paleta institucional USB**:
 
@@ -321,6 +324,7 @@ El directorio `src/types/index.ts` define los contratos TypeScript principales:
 | `UserRole` | `'student' \| 'administrator' \| 'root'` |
 | `TestQuestion` | Pregunta con opciones de respuesta |
 | `TestAttempt` | Intento de prueba con metadatos |
+| `TestSubmissionPayload` | Payload de envío con `answers`, `questions`, `tiempoInvertido` y `satisfaccion` (1-5 o null) |
 | `VocationalResult` | Resultado vocacional con áreas y programas |
 | `CareerRecommendation` | Programa recomendado con afinidad y justificación |
 | `AdminDashboard` | Datos del panel administrativo |
