@@ -38,8 +38,9 @@ export function TestHistoryView() {
 
   const stats = useMemo(() => {
     const completed = tests.filter((t) => t.activo)
-    const totalTime = completed.reduce((sum, t) => sum + (t.tiempoInvertido ?? 0), 0)
-    const avgTime = completed.length > 0 ? Math.round(totalTime / completed.length) : 0
+    const withTime = tests.filter((t) => t.tiempoInvertido != null && t.tiempoInvertido > 0)
+    const totalTime = withTime.reduce((sum, t) => sum + t.tiempoInvertido!, 0)
+    const avgTime = withTime.length > 0 ? Math.round(totalTime / withTime.length) : 0
     return {
       total: tests.length,
       completed: completed.length,
