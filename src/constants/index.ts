@@ -62,7 +62,6 @@ export const GENDER_OPTIONS: Array<SelectOption<GenderOption>> = [
   { value: 'Masculino', label: 'Masculino' },
   { value: 'Femenino', label: 'Femenino' },
   { value: 'Prefiero no decirlo', label: 'Prefiero no decirlo' },
-  { value: 'Otro', label: 'Otro' },
 ]
 
 export const INSTITUTION_LINK_OPTIONS: Array<SelectOption<'Si' | 'No'>> = [
