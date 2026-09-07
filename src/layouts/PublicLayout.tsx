@@ -19,7 +19,7 @@ export function PublicLayout() {
         <div className="public-topbar__inner">
           <Link to={APP_ROUTES.home} className="public-brand" aria-label="Ir al inicio de USB Vocacional">
             <img
-              src={`${publicBasePath}brand/usb-header-logo.png`}
+              src={`${publicBasePath}brand/usb-footer-brand.png`}
               alt="Universidad de San Buenaventura"
               className="public-brand__image"
             />
