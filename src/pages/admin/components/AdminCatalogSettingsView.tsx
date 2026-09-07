@@ -99,7 +99,7 @@ export function AdminCatalogSettingsView() {
     const query = searchQuery.trim().toLowerCase()
     return items.filter((item) => {
       if (activeTab === 'programs') {
-        const areaName = catalogs.areas.find((a) => a.id === (item as AdminProgramCatalogItem).areaId)?.name ?? ''
+        const areaName = catalogs?.areas.find((a) => a.id === (item as AdminProgramCatalogItem).areaId)?.name ?? ''
         return item.name.toLowerCase().includes(query) || areaName.toLowerCase().includes(query)
       }
       if (activeTab === 'tests') {

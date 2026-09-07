@@ -575,7 +575,7 @@ export const adminService = {
     mocked: boolean
     requestedAt: string
   }> {
-    const response = await api.post<{ message: string }>(`/usuarios/${userId}/restablecer-contrasena`)
+    const response = await api.post<{ message: string }>(`/usuarios/${userId}/restablecer-contrasena`, {})
     return {
       data: response.data,
       endpoint: `/api/v1/usuarios/${userId}/restablecer-contrasena`,
@@ -626,7 +626,6 @@ export const adminService = {
     const response = await api.post<{ pachoPath: string }>(
       `/areas/${areaId}/imagen-pacho`,
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } },
     )
     return {
       data: response.data,

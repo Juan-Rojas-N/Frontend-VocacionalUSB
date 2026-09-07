@@ -73,9 +73,10 @@ async function apiRequest<T>(
   options: ApiRequestOptions = {},
 ): Promise<ApiEnvelope<T>> {
   const { method = 'GET', body, authenticated = true } = options
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
 
   const headers: Record<string, string> = { Accept: 'application/json' }
-  if (body !== undefined) {
+  if (body !== undefined && !isFormData) {
     headers['Content-Type'] = 'application/json'
   }
 
@@ -89,7 +90,7 @@ async function apiRequest<T>(
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: isFormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
   })
 
   if (response.status === 401 && path === '/usuarios/me') {

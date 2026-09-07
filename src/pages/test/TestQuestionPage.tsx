@@ -32,6 +32,7 @@ export function TestQuestionPage() {
     answerQuestion,
     introAcknowledged,
     acknowledgeIntro,
+    satisfaccion,
     clear,
   } = useTestSessionStore()
 
@@ -109,6 +110,7 @@ export function TestQuestionPage() {
         submittedAt: new Date().toISOString(),
         answers,
         questions,
+        satisfaccion,
       })
       navigate(APP_ROUTES.results, { replace: true })
       window.setTimeout(() => clear(), 0)
