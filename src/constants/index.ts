@@ -14,6 +14,7 @@ export const APP_ROUTES = {
   register: '/registro',
   recoverPassword: '/recuperar-contrasena',
   resetPassword: '/restablecer-contrasena',
+  terms: '/terminos-y-condiciones',
   profile: '/perfil',
   testIntro: '/prueba-vocacional',
   testSession: '/prueba-vocacional/sesion',
@@ -35,9 +36,7 @@ export const LEGAL_LINKS = {
   legalPersonhood:
     'https://www.usbbog.edu.co/documentos/universidad/institucional-corporativo/resolucion-1326-25-marzo-1975-personeria-juridica.pdf',
   privacyPolicy: 'https://www.usbbog.edu.co/politicas-de-uso-y-privacidad/',
-  // Temporalmente se usa la URL de privacidad porque el requerimiento funcional
-  // contradice el mockup que apuntaba a una URL independiente de términos.
-  terms: 'https://www.usbbog.edu.co/politicas-de-uso-y-privacidad/',
+  terms: '/terminos-y-condiciones',
 } as const
 
 export const LEGAL_DOCUMENT_VERSIONS = {

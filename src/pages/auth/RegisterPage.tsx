@@ -639,9 +639,9 @@ export function RegisterPage() {
               <input type="checkbox" {...register('termsAccepted')} />
               <span>
                 Acepto los{' '}
-                <a href={LEGAL_LINKS.terms} target="_blank" rel="noopener noreferrer">
+                <Link to={APP_ROUTES.terms} className="consentimiento-enlace">
                   Términos y Condiciones
-                </a>
+                </Link>
                 .
               </span>
             </label>

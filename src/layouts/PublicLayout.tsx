@@ -87,14 +87,9 @@ export function PublicLayout() {
                 Políticas de uso y privacidad
               </a>{' '}
               |{' '}
-              <a
-                className="public-footer__link"
-                href={LEGAL_LINKS.terms}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <Link className="public-footer__link" to={APP_ROUTES.terms}>
                 Términos y Condiciones
-              </a>
+              </Link>
             </p>
             <p>
               Institución de educación superior sujeta a la inspección y vigilancia del Ministerio

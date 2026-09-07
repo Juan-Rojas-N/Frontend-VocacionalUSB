@@ -8,6 +8,9 @@ import { RouteGuard } from './RouteGuard'
 const LandingPage = lazy(async () => ({
   default: (await import('../pages/landing/LandingPage')).LandingPage,
 }))
+const TermsPage = lazy(async () => ({
+  default: (await import('../pages/landing/TermsPage')).TermsPage,
+}))
 const LoginPage = lazy(async () => ({
   default: (await import('../pages/auth/LoginPage')).LoginPage,
 }))
@@ -60,6 +63,7 @@ export const router = createBrowserRouter(
       element: <PublicLayout />,
       children: [
         { index: true, element: withSuspense(<LandingPage />) },
+        { path: APP_ROUTES.terms, element: withSuspense(<TermsPage />) },
         { path: APP_ROUTES.login, element: withSuspense(<LoginPage />) },
         { path: APP_ROUTES.register, element: withSuspense(<RegisterPage />) },
         { path: APP_ROUTES.recoverPassword, element: withSuspense(<ForgotPasswordPage />) },

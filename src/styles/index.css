@@ -994,6 +994,108 @@ button {
   letter-spacing: 0.2px;
 }
 
+/* Página legal (términos y condiciones) */
+.legal-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 4rem;
+}
+
+.legal-hero {
+  text-align: center;
+  padding: 2rem 0 2.5rem;
+  border-bottom: 1px solid var(--usb-border);
+  margin-bottom: 2.5rem;
+}
+
+.legal-hero__tag {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: var(--usb-orange-soft);
+  color: var(--usb-orange);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.legal-hero h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin: 0 0 0.75rem;
+  color: var(--usb-blue);
+}
+
+.legal-hero p {
+  margin: 0.35rem 0;
+  color: var(--usb-text-muted);
+  font-size: 1.05rem;
+}
+
+.legal-hero p.legal-hero__meta {
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.legal-content {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.legal-section h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  color: var(--usb-blue);
+  margin: 0 0 0.75rem;
+}
+
+.legal-section p {
+  margin: 0 0 0.9rem;
+  line-height: 1.7;
+  color: var(--usb-black);
+}
+
+.legal-section ul,
+.legal-section ol {
+  margin: 0 0 0.9rem;
+  padding-left: 1.4rem;
+}
+
+.legal-section li {
+  line-height: 1.6;
+  margin-bottom: 0.4rem;
+}
+
+.legal-actions {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--usb-border);
+  display: flex;
+  justify-content: center;
+}
+
+.legal-actions__cta {
+  display: inline-block;
+  padding: 0.7rem 1.5rem;
+  border-radius: 999px;
+  background: var(--usb-blue);
+  color: #fff;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.legal-actions__cta:hover,
+.legal-actions__cta:focus-visible {
+  opacity: 0.85;
+}
+
+.consentimiento-enlace {
+  color: var(--usb-blue);
+  text-decoration: underline;
+}
+
 @media (max-width: 980px) {
   .public-topbar__inner,
   .public-footer__inner {
