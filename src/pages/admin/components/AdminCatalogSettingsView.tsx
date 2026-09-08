@@ -4,10 +4,10 @@ import type {
   AdminAreaCatalogItem,
   AdminCatalogs,
   AdminProgramCatalogItem,
-  AdminTestCatalogItem,
+  AdminQuestionCatalogItem,
 } from '../../../types'
 
-type CatalogTab = 'areas' | 'programs' | 'tests'
+type CatalogTab = 'areas' | 'programs' | 'questions'
 type FormMode = 'create' | 'edit'
 
 interface CatalogFormValues {
@@ -17,9 +17,9 @@ interface CatalogFormValues {
   profile: string
   areaId: string
   url: string
-  version: string
-  questionCount: string
-  durationMinutes: string
+  codigo: string
+  idPrograma: string
+  enunciado: string
 }
 
 const EMPTY_FORM: CatalogFormValues = {
@@ -29,22 +29,22 @@ const EMPTY_FORM: CatalogFormValues = {
   profile: '',
   areaId: '',
   url: '',
-  version: '',
-  questionCount: '',
-  durationMinutes: '',
+  codigo: '',
+  idPrograma: '',
+  enunciado: '',
 }
 
 const TAB_LABELS: Record<CatalogTab, string> = {
   areas: 'Áreas',
   programs: 'Programas',
-  tests: 'Pruebas',
+  questions: 'Preguntas',
 }
 
 function cloneCatalogs(catalogs: AdminCatalogs): AdminCatalogs {
   return {
     areas: catalogs.areas.map((item) => ({ ...item })),
     programs: catalogs.programs.map((item) => ({ ...item })),
-    tests: catalogs.tests.map((item) => ({ ...item })),
+    questions: catalogs.questions.map((item) => ({ ...item })),
   }
 }
 
@@ -99,14 +99,21 @@ export function AdminCatalogSettingsView() {
     const query = searchQuery.trim().toLowerCase()
     return items.filter((item) => {
       if (activeTab === 'programs') {
-        const areaName = catalogs?.areas.find((a) => a.id === (item as AdminProgramCatalogItem).areaId)?.name ?? ''
-        return item.name.toLowerCase().includes(query) || areaName.toLowerCase().includes(query)
+        const program = item as AdminProgramCatalogItem
+        const areaName = catalogs?.areas.find((a) => a.id === program.areaId)?.name ?? ''
+        return program.name.toLowerCase().includes(query) || areaName.toLowerCase().includes(query)
       }
-      if (activeTab === 'tests') {
-        const test = item as AdminTestCatalogItem
-        return item.name.toLowerCase().includes(query) || test.version.toLowerCase().includes(query)
+      if (activeTab === 'questions') {
+        const question = item as AdminQuestionCatalogItem
+        const program = catalogs?.programs.find((p) => p.id === question.idPrograma)
+        const programName = program?.name.toLowerCase() ?? ''
+        return (
+          question.codigo.toLowerCase().includes(query) ||
+          question.enunciado.toLowerCase().includes(query) ||
+          programName.includes(query)
+        )
       }
-      return item.name.toLowerCase().includes(query)
+      return (item as AdminAreaCatalogItem).name.toLowerCase().includes(query)
     })
   }, [catalogs, activeTab, searchQuery])
 
@@ -124,7 +131,7 @@ export function AdminCatalogSettingsView() {
     setEditingPachoPath(null)
   }
 
-  function openEditForm(item: AdminAreaCatalogItem | AdminProgramCatalogItem | AdminTestCatalogItem) {
+  function openEditForm(item: AdminAreaCatalogItem | AdminProgramCatalogItem | AdminQuestionCatalogItem) {
     setFormMode('edit')
     setFormErrors({})
     setStatus(null)
@@ -150,14 +157,13 @@ export function AdminCatalogSettingsView() {
         url: program.url ?? '',
       })
     } else {
-      const test = item as AdminTestCatalogItem
+      const question = item as AdminQuestionCatalogItem
       setFormValues({
         ...EMPTY_FORM,
-        id: test.id,
-        name: test.name,
-        version: test.version,
-        questionCount: String(test.questionCount),
-        durationMinutes: String(test.durationMinutes),
+        id: question.id,
+        codigo: question.codigo,
+        idPrograma: question.idPrograma,
+        enunciado: question.enunciado,
       })
     }
   }
@@ -189,17 +195,15 @@ export function AdminCatalogSettingsView() {
       }
     }
 
-    if (activeTab === 'tests') {
-      if (!formValues.version.trim()) {
-        nextErrors.version = 'Ingresa una versión.'
+    if (activeTab === 'questions') {
+      if (!formValues.codigo.trim()) {
+        nextErrors.codigo = 'Ingresa el código de la pregunta.'
       }
-      const questionCount = Number(formValues.questionCount)
-      if (!Number.isInteger(questionCount) || questionCount <= 0) {
-        nextErrors.questionCount = 'Ingresa una cantidad entera mayor que cero.'
+      if (!formValues.idPrograma) {
+        nextErrors.idPrograma = 'Selecciona el programa al que pertenece la pregunta.'
       }
-      const durationMinutes = Number(formValues.durationMinutes)
-      if (!Number.isInteger(durationMinutes) || durationMinutes <= 0) {
-        nextErrors.durationMinutes = 'Ingresa una duración entera mayor que cero.'
+      if (formValues.enunciado.trim().length < 20) {
+        nextErrors.enunciado = 'El enunciado debe tener al menos 20 caracteres.'
       }
     }
 
@@ -249,21 +253,20 @@ export function AdminCatalogSettingsView() {
             : [...catalogs.programs, nextItem],
       })
     } else {
-      const previous = catalogs.tests.find((item) => item.id === id)
-      const nextItem: AdminTestCatalogItem = {
+      const previous = catalogs.questions.find((item) => item.id === id)
+      const nextItem: AdminQuestionCatalogItem = {
         id,
-        name: formValues.name.trim(),
-        version: formValues.version.trim(),
-        questionCount: Number(formValues.questionCount),
-        durationMinutes: Number(formValues.durationMinutes),
+        codigo: formValues.codigo.trim(),
+        idPrograma: formValues.idPrograma,
+        enunciado: formValues.enunciado.trim(),
         active: previous?.active ?? true,
       }
       setCatalogs({
         ...catalogs,
-        tests:
+        questions:
           formMode === 'edit'
-            ? catalogs.tests.map((item) => (item.id === id ? nextItem : item))
-            : [...catalogs.tests, nextItem],
+            ? catalogs.questions.map((item) => (item.id === id ? nextItem : item))
+            : [...catalogs.questions, nextItem],
       })
     }
 
@@ -300,7 +303,7 @@ export function AdminCatalogSettingsView() {
     } else {
       setCatalogs({
         ...catalogs,
-        tests: catalogs.tests.map((item) =>
+        questions: catalogs.questions.map((item) =>
           item.id === id ? { ...item, active: !item.active } : item,
         ),
       })
@@ -403,10 +406,11 @@ export function AdminCatalogSettingsView() {
       <div className="seccion-administracion__encabezado">
         <div>
           <span className="panel-administracion__eyebrow">Administrador · Configuración</span>
-          <h2>Área - Programas - Prueba</h2>
+          <h2>Área - Programas - Preguntas</h2>
           <p>
-            Áreas y programas se gestionan contra el backend. La pestaña “Prueba” se mantiene como
-            propuesta local porque el backend modela intentos, no definiciones de prueba.
+            Áreas, programas y preguntas se gestionan contra el backend. Las preguntas pertenecen a
+            un programa. Al desactivar todas las preguntas activas de un área, el área se desactiva
+            automáticamente.
           </p>
         </div>
       </div>
@@ -448,14 +452,14 @@ export function AdminCatalogSettingsView() {
           <div className="admin-catalog-panel__toolbar-actions">
             <input
               type="text"
-              placeholder={`Buscar ${activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'prueba'}...`}
+              placeholder={`Buscar ${activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'pregunta'}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="admin-catalog-panel__search"
             />
             <button type="button" onClick={openCreateForm} className="admin-catalog-panel__create-btn">
               <span className="admin-catalog-panel__create-icon" aria-hidden="true">+</span>
-              Crear {activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'prueba'}
+              Crear {activeTab === 'areas' ? 'área' : activeTab === 'programs' ? 'programa' : 'pregunta'}
             </button>
           </div>
         </div>
@@ -567,41 +571,42 @@ export function AdminCatalogSettingsView() {
                 </>
               ) : null}
 
-              {activeTab === 'tests' ? (
+              {activeTab === 'questions' ? (
                 <>
-                  <label htmlFor="catalog-version">
-                    Versión
+                  <label htmlFor="catalog-codigo">
+                    Código
                     <input
-                      id="catalog-version"
-                      value={formValues.version}
-                      aria-invalid={Boolean(formErrors.version)}
-                      onChange={(event) => updateForm('version', event.target.value)}
+                      id="catalog-codigo"
+                      value={formValues.codigo}
+                      aria-invalid={Boolean(formErrors.codigo)}
+                      onChange={(event) => updateForm('codigo', event.target.value)}
                     />
-                    {formErrors.version ? <small className="form-field__error">{formErrors.version}</small> : null}
+                    {formErrors.codigo ? <small className="form-field__error">{formErrors.codigo}</small> : null}
                   </label>
-                  <label htmlFor="catalog-question-count">
-                    Número de preguntas
-                    <input
-                      id="catalog-question-count"
-                      type="number"
-                      min="1"
-                      value={formValues.questionCount}
-                      aria-invalid={Boolean(formErrors.questionCount)}
-                      onChange={(event) => updateForm('questionCount', event.target.value)}
-                    />
-                    {formErrors.questionCount ? <small className="form-field__error">{formErrors.questionCount}</small> : null}
+                  <label htmlFor="catalog-program">
+                    Programa
+                    <select
+                      id="catalog-program"
+                      value={formValues.idPrograma}
+                      aria-invalid={Boolean(formErrors.idPrograma)}
+                      onChange={(event) => updateForm('idPrograma', event.target.value)}
+                    >
+                      <option value="">Selecciona un programa</option>
+                      {catalogs.programs.map((program) => (
+                        <option key={program.id} value={program.id}>{program.name}</option>
+                      ))}
+                    </select>
+                    {formErrors.idPrograma ? <small className="form-field__error">{formErrors.idPrograma}</small> : null}
                   </label>
-                  <label htmlFor="catalog-duration">
-                    Duración estimada (minutos)
-                    <input
-                      id="catalog-duration"
-                      type="number"
-                      min="1"
-                      value={formValues.durationMinutes}
-                      aria-invalid={Boolean(formErrors.durationMinutes)}
-                      onChange={(event) => updateForm('durationMinutes', event.target.value)}
+                  <label htmlFor="catalog-enunciado" className="admin-catalog-form__full">
+                    Enunciado de la pregunta
+                    <textarea
+                      id="catalog-enunciado"
+                      value={formValues.enunciado}
+                      aria-invalid={Boolean(formErrors.enunciado)}
+                      onChange={(event) => updateForm('enunciado', event.target.value)}
                     />
-                    {formErrors.durationMinutes ? <small className="form-field__error">{formErrors.durationMinutes}</small> : null}
+                    {formErrors.enunciado ? <small className="form-field__error">{formErrors.enunciado}</small> : null}
                   </label>
                 </>
               ) : null}
@@ -623,21 +628,33 @@ export function AdminCatalogSettingsView() {
             {activeItems.map((item) => {
               const area = activeTab === 'areas' ? (item as AdminAreaCatalogItem) : null
               const program = activeTab === 'programs' ? (item as AdminProgramCatalogItem) : null
-              const test = activeTab === 'tests' ? (item as AdminTestCatalogItem) : null
+              const question = activeTab === 'questions' ? (item as AdminQuestionCatalogItem) : null
               return (
                 <article key={item.id} className={!item.active ? 'admin-catalog-list__inactive' : undefined}>
                   <div>
                     <span>{item.active ? 'Activo' : 'Inactivo'}</span>
-                    <strong>{item.name}</strong>
-                    {area ? (
-                      <p><b>Perfil:</b> {area.profile}</p>
+                    {question ? (
+                      <>
+                        <strong>{question.codigo}</strong>
+                        <p>{question.enunciado}</p>
+                        <p>
+                          <b>Programa:</b>{' '}
+                          {catalogs.programs.find((catalogProgram) => catalogProgram.id === question.idPrograma)?.name ?? 'Programa no disponible'}
+                        </p>
+                      </>
+                    ) : area ? (
+                      <>
+                        <strong>{area.name}</strong>
+                        <p><b>Perfil:</b> {area.profile}</p>
+                      </>
                     ) : program ? (
-                      <p>
-                        <b>Área:</b>{' '}
-                        {catalogs.areas.find((catalogArea) => catalogArea.id === program.areaId)?.name ?? 'Área no disponible'}
-                      </p>
-                    ) : test ? (
-                      <p>{test.version} · {test.questionCount} preguntas · {test.durationMinutes} min</p>
+                      <>
+                        <strong>{program.name}</strong>
+                        <p>
+                          <b>Área:</b>{' '}
+                          {catalogs.areas.find((catalogArea) => catalogArea.id === program.areaId)?.name ?? 'Área no disponible'}
+                        </p>
+                      </>
                     ) : null}
                   </div>
                   <div className="admin-catalog-list__actions">

@@ -336,19 +336,18 @@ export interface AdminProgramCatalogItem {
   active: boolean
 }
 
-export interface AdminTestCatalogItem {
+export interface AdminQuestionCatalogItem {
   id: string
-  name: string
-  version: string
-  questionCount: number
-  durationMinutes: number
+  codigo: string
+  idPrograma: string
+  enunciado: string
   active: boolean
 }
 
 export interface AdminCatalogs {
   areas: AdminAreaCatalogItem[]
   programs: AdminProgramCatalogItem[]
-  tests: AdminTestCatalogItem[]
+  questions: AdminQuestionCatalogItem[]
 }
 
 export interface AdminReportFilters {

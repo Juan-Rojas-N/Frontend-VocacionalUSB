@@ -1,22 +1,20 @@
-import { mockAdminCatalogs, storageKeys } from '../mocks/data'
 import type {
   AdminAreaCatalogItem,
   AdminCatalogs,
   AdminDashboard,
   AdminProgramCatalogItem,
+  AdminQuestionCatalogItem,
   AdminReportDataset,
   AdminReportProgramOption,
   AdminReportRow,
   AdminReportFilters,
   AdminResultRecord,
-  AdminTestCatalogItem,
   ApiEnvelope,
   RegisteredUserRecord,
   RoleActivity,
   RoleActivityAssignment,
   UserRole,
 } from '../types'
-import { readStorage, writeStorage } from '../utils/storage'
 import { api, simulateRequest } from './apiClient'
 import { mapBackendUser, type BackendUsuarioResponse } from './userService'
 
@@ -92,6 +90,14 @@ interface BackendResultadoResponse {
   url?: string | null
 }
 
+interface BackendPreguntaResponse {
+  id: number | null
+  codigo: string | null
+  idPrograma: number
+  enunciado: string
+  activo?: boolean
+}
+
 const ROLE_NAME_TO_ROLE: Record<string, UserRole> = {
   ROOT: 'root',
   ADMINISTRADOR: 'administrator',
@@ -113,17 +119,8 @@ function cloneCatalogs(catalogs: AdminCatalogs): AdminCatalogs {
   return {
     areas: catalogs.areas.map((area) => ({ ...area })),
     programs: catalogs.programs.map((program) => ({ ...program })),
-    tests: catalogs.tests.map((test) => ({ ...test })),
+    questions: catalogs.questions.map((question) => ({ ...question })),
   }
-}
-
-function cloneTests(tests: AdminTestCatalogItem[]): AdminTestCatalogItem[] {
-  return tests.map((test) => ({ ...test }))
-}
-
-function readStoredTests(): AdminTestCatalogItem[] {
-  const stored = readStorage<{ tests?: AdminTestCatalogItem[] } | null>(storageKeys.adminCatalogs, null)
-  return stored?.tests?.length ? cloneTests(stored.tests) : cloneTests(mockAdminCatalogs.tests)
 }
 
 function toRegisteredRecord(raw: BackendUsuarioResponse): RegisteredUserRecord {
@@ -266,6 +263,52 @@ async function persistProgramChanges(
       previous.areaId !== item.areaId
     if (dataChanged) {
       await api.put(`/programas/${item.id}`, toProgramRequest(item))
+    }
+  }
+}
+
+function toQuestionRequest(question: AdminQuestionCatalogItem) {
+  const idPrograma = Number(question.idPrograma)
+  if (!Number.isFinite(idPrograma)) {
+    throw new Error(`La pregunta "${question.codigo}" requiere un programa válido.`)
+  }
+
+  return {
+    codigo: question.codigo,
+    idPrograma,
+    enunciado: question.enunciado,
+  }
+}
+
+async function persistQuestionChanges(
+  saved: AdminQuestionCatalogItem[],
+  next: AdminQuestionCatalogItem[],
+) {
+  for (const item of next) {
+    const previous = saved.find((question) => question.id === item.id)
+
+    if (!previous) {
+      const created = await api.post<BackendPreguntaResponse>('/preguntas', toQuestionRequest(item))
+      item.id = String(created.data.id)
+      continue
+    }
+
+    if (previous.active && !item.active) {
+      await api.delete(`/preguntas/${item.id}`)
+      continue
+    }
+
+    if (!previous.active && item.active) {
+      await api.patch(`/preguntas/${item.id}/reactivar`, {})
+      continue
+    }
+
+    const dataChanged =
+      previous.codigo !== item.codigo ||
+      previous.idPrograma !== item.idPrograma ||
+      previous.enunciado !== item.enunciado
+    if (dataChanged) {
+      await api.put(`/preguntas/${item.id}`, toQuestionRequest(item))
     }
   }
 }
@@ -505,9 +548,10 @@ export const adminService = {
     mocked: boolean
     requestedAt: string
   }> {
-    const [areasResponse, programsResponse] = await Promise.all([
+    const [areasResponse, programsResponse, questionsResponse] = await Promise.all([
       api.get<BackendAreaResponse[]>('/areas').catch(() => null),
       api.get<BackendProgramaResponse[]>('/programas').catch(() => null),
+      api.get<BackendPreguntaResponse[]>('/preguntas').catch(() => null),
     ])
 
     const catalogs: AdminCatalogs = {
@@ -527,7 +571,13 @@ export const adminService = {
         url: program.urlPrograma ?? undefined,
         active: program.activo ?? true,
       })),
-      tests: readStoredTests(),
+      questions: (questionsResponse?.data ?? []).map((question) => ({
+        id: String(question.id),
+        codigo: question.codigo ?? '',
+        idPrograma: String(question.idPrograma),
+        enunciado: question.enunciado,
+        active: question.activo ?? true,
+      })),
     }
 
     return {
@@ -557,7 +607,7 @@ export const adminService = {
     }
 
     await persistProgramChanges(savedCatalogs.programs, catalogs.programs)
-    writeStorage(storageKeys.adminCatalogs, { tests: catalogs.tests })
+    await persistQuestionChanges(savedCatalogs.questions, catalogs.questions)
 
     return {
       data: cloneCatalogs(catalogs),

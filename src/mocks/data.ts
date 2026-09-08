@@ -12,7 +12,6 @@ import type {
 export const storageKeys = {
   users: 'usb-vocacional-users',
   roleActivities: 'usb-vocacional-role-activities-mock',
-  adminCatalogs: 'usb-vocacional-admin-catalogs-mock',
 }
 
 export const defaultMockUsers: RegisteredUserRecord[] = [
@@ -534,13 +533,19 @@ export const mockAdminCatalogs: AdminCatalogs = {
       active: true,
     },
   ],
-  tests: [
+  questions: [
     {
-      id: 'vocational-screening-v1-1',
-      name: 'Tamizaje vocacional',
-      version: 'v1.1',
-      questionCount: 180,
-      durationMinutes: 40,
+      id: 'engineering-technology-q1',
+      codigo: 'ING-001',
+      idPrograma: 'systems-engineering',
+      enunciado: 'Diseñar un sistema para optimizar un proceso productivo.',
+      active: true,
+    },
+    {
+      id: 'social-human-q1',
+      codigo: 'SOC-001',
+      idPrograma: 'psychology',
+      enunciado: 'Analizar el comportamiento humano en situaciones de conflicto.',
       active: true,
     },
   ],
