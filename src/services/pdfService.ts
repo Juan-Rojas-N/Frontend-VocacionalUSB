@@ -13,12 +13,31 @@ function sanitizeFileName(value: string) {
   return cleaned || 'resultado-vocacional'
 }
 
-export function generateResultPdf(result: VocationalResult, userName: string): string {
+const LOGO_HEADER_URL = `${import.meta.env.BASE_URL}brand/header-logo.png`
+
+async function cargarLogoUrl(): Promise<string | null> {
+  try {
+    const response = await fetch(LOGO_HEADER_URL)
+    if (!response.ok) return null
+    const blob = await response.blob()
+    return await new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
+
+export async function generateResultPdf(result: VocationalResult, userName: string): Promise<string> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const margin = 48
+  const logoUrl = await cargarLogoUrl()
 
-  const encabezado = () => {
+  const encabezado = (logoUrl: string | null) => {
     doc.setFillColor(...BRAND_RGB)
     doc.rect(0, 0, pageWidth, 96, 'F')
     doc.setTextColor(255, 255, 255)
@@ -28,9 +47,15 @@ export function generateResultPdf(result: VocationalResult, userName: string): s
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(11)
     doc.text('Resultado de tu prueba vocacional', margin, 66)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.text('usbbog.edu.co', pageWidth - margin, 66, { align: 'right' })
+    if (logoUrl) {
+      doc.setFillColor(255, 255, 255)
+      const anchoLogo = 232
+      const altoLogo = 46
+      const xLogo = pageWidth - margin - anchoLogo
+      const yLogo = 32
+      doc.roundedRect(xLogo - 12, yLogo - 10, anchoLogo + 24, altoLogo + 20, 6, 6, 'F')
+      doc.addImage(logoUrl, 'PNG', xLogo, yLogo, anchoLogo, altoLogo)
+    }
   }
 
   const piePagina = () => {
@@ -47,7 +72,7 @@ export function generateResultPdf(result: VocationalResult, userName: string): s
     }
   }
 
-  encabezado()
+  encabezado(logoUrl)
 
   let cursorY = 128
   doc.setFont('helvetica', 'bold')
@@ -121,14 +146,21 @@ export function generateResultPdf(result: VocationalResult, userName: string): s
   const finTabla2 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY
   cursorY = finTabla2 + 24
 
+  doc.setDrawColor(...BRAND_RGB)
+  doc.setFillColor(255, 247, 238)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.setTextColor(...GRAY_RGB)
-  const aviso = 'Este informe se genera automáticamente a partir de tus respuestas y busca orientarte ' +
-    'en la exploración de tu vocación. No sustituye la asesoría profesional.'
+  doc.setTextColor(...DARK_RGB)
+  const aviso =
+    'Estos resultados son orientativos y constituyen una estimación basada únicamente en tus respuestas. ' +
+    'No son un diagnóstico ni reemplazan una evaluación integral o un proceso de orientación vocacional ' +
+    'realizado por un profesional en Psicología. ' +
+    'Conforme al artículo 47 de la Ley 1090 de 2006, una prueba aislada no es suficiente para realizar una ' +
+    'evaluación diagnóstica.'
   const lineasAviso = doc.splitTextToSize(aviso, pageWidth - margin * 2)
   if (cursorY + lineasAviso.length * 13 < doc.internal.pageSize.getHeight() - 56) {
-    doc.text(lineasAviso, margin, cursorY)
+    doc.rect(margin, cursorY - 14, (pageWidth - margin * 2), 18 + lineasAviso.length * 13, 'FD')
+    doc.text(lineasAviso, margin + 8, cursorY)
   }
 
   piePagina()

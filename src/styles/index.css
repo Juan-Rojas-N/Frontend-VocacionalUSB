@@ -3107,6 +3107,34 @@ button {
   line-height: 1.5;
 }
 
+.resumen-resultado__aviso-legal {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border-left: 4px solid #9f2d20;
+  background: rgba(159, 45, 32, 0.07);
+  color: #4a1c16;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.resumen-resultado__aviso-legal strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #9f2d20;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+@media (max-width: 560px) {
+  .resumen-resultado__aviso-legal {
+    font-size: 13px;
+  }
+}
+
 .perfil-vocacional__usuario {
   grid-column: 1 / -1;
   display: grid;

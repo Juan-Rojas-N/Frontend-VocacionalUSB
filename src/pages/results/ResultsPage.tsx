@@ -65,7 +65,7 @@ export function ResultsPage() {
     }
 
     try {
-      const fileName = generateResultPdf(
+      const fileName = await generateResultPdf(
         data,
         studentName ?? sessionUser?.fullName ?? 'Estudiante USB',
       )
@@ -179,11 +179,13 @@ export function ResultsPage() {
             cómodo/a explorando carreras relacionadas, ya que se alinean con tus intereses,
             habilidades y preferencias.
           </p>
-          <p>
-            Recuerda que este resultado es una orientación inicial: úsalo como punto de partida para
-            conocer programas, investigar sus campos de acción y descubrir cuáles se ajustan mejor a
-            tu proyecto de vida.
-          </p>
+          <div className="resumen-resultado__aviso-legal">
+            <strong>Aviso importante</strong>
+            Estos resultados son orientativos y constituyen una estimación basada únicamente en tus respuestas.
+            No son un diagnóstico ni reemplazan una evaluación integral o un proceso de orientación vocacional
+            realizado por un profesional en Psicología. Conforme al artículo 47 de la Ley 1090 de 2006,
+            una prueba aislada no es suficiente para realizar una evaluación diagnóstica.
+          </div>
           <p className="resumen-resultado__meta">
             Informe generado el {formatDate(data.generatedAt)} con recomendaciones iniciales.
           </p>

@@ -170,7 +170,7 @@ export function AdminCatalogSettingsView() {
 
   function validateForm() {
     const nextErrors: Record<string, string> = {}
-    if (formValues.name.trim().length < 3) {
+    if (activeTab !== 'questions' && formValues.name.trim().length < 3) {
       nextErrors.name = 'El nombre debe tener al menos 3 caracteres.'
     }
 
@@ -473,16 +473,18 @@ export function AdminCatalogSettingsView() {
               </button>
             </div>
             <div className="admin-catalog-form__grid">
-              <label htmlFor="catalog-name">
-                Nombre
-                <input
-                  id="catalog-name"
-                  value={formValues.name}
-                  aria-invalid={Boolean(formErrors.name)}
-                  onChange={(event) => updateForm('name', event.target.value)}
-                />
-                {formErrors.name ? <small className="form-field__error">{formErrors.name}</small> : null}
-              </label>
+              {activeTab !== 'questions' ? (
+                <label htmlFor="catalog-name">
+                  Nombre
+                  <input
+                    id="catalog-name"
+                    value={formValues.name}
+                    aria-invalid={Boolean(formErrors.name)}
+                    onChange={(event) => updateForm('name', event.target.value)}
+                  />
+                  {formErrors.name ? <small className="form-field__error">{formErrors.name}</small> : null}
+                </label>
+              ) : null}
 
               {activeTab === 'areas' ? (
                 <>
