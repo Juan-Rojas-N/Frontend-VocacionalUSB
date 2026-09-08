@@ -13,11 +13,12 @@ function sanitizeFileName(value: string) {
   return cleaned || 'resultado-vocacional'
 }
 
-const LOGO_HEADER_URL = `${import.meta.env.BASE_URL}brand/usb-footer-brand.png`
+const LOGO_HEADER_URL = `${import.meta.env.BASE_URL}brand/header-logo.png`
+const BOGOTA_HEADER_URL = `${import.meta.env.BASE_URL}brand/bogota_reporte.png`
 
-async function cargarLogoUrl(): Promise<string | null> {
+async function cargarImagen(url: string): Promise<string | null> {
   try {
-    const response = await fetch(LOGO_HEADER_URL)
+    const response = await fetch(url)
     if (!response.ok) return null
     const blob = await response.blob()
     return await new Promise((resolve) => {
@@ -35,25 +36,37 @@ export async function generateResultPdf(result: VocationalResult, userName: stri
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const margin = 48
-  const logoUrl = await cargarLogoUrl()
+  const logoUrl = await cargarImagen(LOGO_HEADER_URL)
+  const bogotaUrl = await cargarImagen(BOGOTA_HEADER_URL)
 
-  const encabezado = (logoUrl: string | null) => {
-    doc.setFillColor(...BRAND_RGB)
-    doc.rect(0, 0, pageWidth, 96, 'F')
-    doc.setTextColor(255, 255, 255)
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(18)
-    doc.text('Orientación Vocacional USB', margin, 44)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(11)
-    doc.text('Resultado de tu prueba vocacional', margin, 66)
+  const encabezado = (logoUrl: string | null, bogotaUrl: string | null) => {
+    const altoEncabezado = 116
+    doc.setFillColor(255, 255, 255)
+    doc.rect(0, 0, pageWidth, altoEncabezado, 'F')
     if (logoUrl) {
-      const anchoLogo = 150
+      const anchoLogo = 180
       const altoLogo = Math.round(anchoLogo * (201 / 1037))
-      const xLogo = pageWidth - margin - anchoLogo
-      const yLogo = Math.round((96 - altoLogo) / 2)
+      const xLogo = margin
+      const yLogo = Math.round((altoEncabezado - altoLogo) / 2)
       doc.addImage(logoUrl, 'PNG', xLogo, yLogo, anchoLogo, altoLogo)
     }
+    if (bogotaUrl) {
+      const altoBogota = 68
+      const anchoBogota = Math.round(altoBogota * (1209 / 1171))
+      const xBogota = pageWidth - margin - anchoBogota
+      const yBogota = Math.round((altoEncabezado - altoBogota) / 2)
+      doc.addImage(bogotaUrl, 'PNG', xBogota, yBogota, anchoBogota, altoBogota)
+    }
+    doc.setTextColor(...BRAND_RGB)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(20)
+    doc.text('Orientación Vocacional USB', pageWidth / 2 + 43, 50, { align: 'center' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(12)
+    doc.setTextColor(...DARK_RGB)
+    doc.text('Resultado de tu prueba vocacional', pageWidth / 2 + 43, 70, { align: 'center' })
+    doc.setFillColor(...BRAND_RGB)
+    doc.rect(0, altoEncabezado - 6, pageWidth, 6, 'F')
   }
 
   const piePagina = () => {
@@ -70,9 +83,9 @@ export async function generateResultPdf(result: VocationalResult, userName: stri
     }
   }
 
-  encabezado(logoUrl)
+  encabezado(logoUrl, bogotaUrl)
 
-  let cursorY = 128
+  let cursorY = 142
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
   doc.setTextColor(...DARK_RGB)
