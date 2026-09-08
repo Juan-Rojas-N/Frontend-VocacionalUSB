@@ -13,7 +13,7 @@ function sanitizeFileName(value: string) {
   return cleaned || 'resultado-vocacional'
 }
 
-const LOGO_HEADER_URL = `${import.meta.env.BASE_URL}brand/header-logo.png`
+const LOGO_HEADER_URL = `${import.meta.env.BASE_URL}brand/usb-footer-brand.png`
 
 async function cargarLogoUrl(): Promise<string | null> {
   try {
@@ -48,12 +48,10 @@ export async function generateResultPdf(result: VocationalResult, userName: stri
     doc.setFontSize(11)
     doc.text('Resultado de tu prueba vocacional', margin, 66)
     if (logoUrl) {
-      doc.setFillColor(255, 255, 255)
-      const anchoLogo = 232
-      const altoLogo = 46
+      const anchoLogo = 150
+      const altoLogo = Math.round(anchoLogo * (201 / 1037))
       const xLogo = pageWidth - margin - anchoLogo
-      const yLogo = 32
-      doc.roundedRect(xLogo - 12, yLogo - 10, anchoLogo + 24, altoLogo + 20, 6, 6, 'F')
+      const yLogo = Math.round((96 - altoLogo) / 2)
       doc.addImage(logoUrl, 'PNG', xLogo, yLogo, anchoLogo, altoLogo)
     }
   }
