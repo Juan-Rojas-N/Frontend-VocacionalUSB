@@ -442,6 +442,7 @@ export interface AdminReportRow {
 export interface AdminReportDataset {
   rows: AdminReportRow[]
   programs: AdminReportProgramOption[]
+  genders: string[]
   loadedAt: string
 }
 

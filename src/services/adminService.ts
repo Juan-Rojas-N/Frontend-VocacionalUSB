@@ -384,6 +384,21 @@ export const adminService = {
 
     const users = usersResponse.data.filter((user) => user.id != null && user.estado)
 
+    const genderSet = new Set<string>()
+    let hasUnspecifiedGender = false
+    for (const user of usersResponse.data) {
+      const gender = user.genero ? user.genero.trim() : ''
+      if (gender) {
+        genderSet.add(gender)
+      } else {
+        hasUnspecifiedGender = true
+      }
+    }
+    if (hasUnspecifiedGender) {
+      genderSet.add('__sin_especificar')
+    }
+    const genders = Array.from(genderSet)
+
     const nestedRows = await Promise.all(
       users.map(async (user) => {
         try {
@@ -441,6 +456,15 @@ export const adminService = {
       data: {
         rows,
         programs: programs.sort((left, right) => left.name.localeCompare(right.name, 'es')),
+        genders: genders.sort((left, right) => {
+          if (left === '__sin_especificar') {
+            return 1
+          }
+          if (right === '__sin_especificar') {
+            return -1
+          }
+          return left.localeCompare(right, 'es')
+        }),
         loadedAt: new Date().toISOString(),
       },
       endpoint: '/api/v1/usuarios',

@@ -21,13 +21,9 @@ interface GeneratedReport {
   generatedAt: string
 }
 
-const REPORT_GENDER_OPTIONS = [
-  { value: 'Masculino', label: 'Masculino' },
-  { value: 'Femenino', label: 'Femenino' },
-  { value: 'Prefiero no decirlo', label: 'Prefiero no decirlo' },
-  { value: 'Otro', label: 'Otro' },
-  { value: '__sin_especificar', label: 'Sin especificar' },
-]
+function genderLabel(value: string): string {
+  return value === '__sin_especificar' ? 'Sin especificar' : value
+}
 
 function normalizeSearch(value: string) {
   return value
@@ -89,6 +85,7 @@ export function AdminReportsView() {
 
   const rows = useMemo(() => dataset?.rows ?? [], [dataset])
   const programOptions = useMemo(() => dataset?.programs ?? [], [dataset])
+  const genderOptions = useMemo(() => dataset?.genders ?? [], [dataset])
 
   const usersById = useMemo(
     () => new Map(rows.map((row) => [row.userId, row])),
@@ -288,12 +285,7 @@ export function AdminReportsView() {
       chips.push(`Programa: ${selectedProgram.name}`)
     }
     if (report.filters.genero) {
-      const genderOption = REPORT_GENDER_OPTIONS.find(
-        (option) => option.value === report.filters.genero,
-      )
-      if (genderOption) {
-        chips.push(`Género: ${genderOption.label}`)
-      }
+      chips.push(`Género: ${genderLabel(report.filters.genero)}`)
     }
     if (report.filters.startDate) {
       chips.push(`Desde: ${report.filters.startDate}`)
@@ -457,9 +449,9 @@ export function AdminReportsView() {
             }}
           >
             <option value="">Todos los géneros</option>
-            {REPORT_GENDER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+            {genderOptions.map((value) => (
+              <option key={value} value={value}>
+                {genderLabel(value)}
               </option>
             ))}
           </select>
