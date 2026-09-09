@@ -21,6 +21,17 @@ export function applyReportFilters(
       return false
     }
 
+    if (filters.genero) {
+      const genero = row.genero ? row.genero.trim() : ''
+      if (filters.genero === '__sin_especificar') {
+        if (genero !== '') {
+          return false
+        }
+      } else if (genero !== filters.genero) {
+        return false
+      }
+    }
+
     const completedAt = row.completedAt.slice(0, 10)
     if (filters.startDate && completedAt < filters.startDate) {
       return false

@@ -3692,8 +3692,10 @@ button {
   margin-top: 14px;
   color: #0f0f0f;
   font-family: 'Poppins', sans-serif;
-  font-size: clamp(26px, 2.5vw, 40px);
-  line-height: 1;
+  font-size: clamp(22px, 2vw, 34px);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .estadistica-administracion__tarjeta p {
@@ -5289,6 +5291,8 @@ input:disabled {
 .reporte-barras__fila > strong {
   color: #4d4842;
   font-size: 13px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .reporte-barras__fila > strong {
@@ -5348,6 +5352,15 @@ input:disabled {
   grid-template-columns: 1.1fr 0.8fr 0.8fr 1fr 1.1fr 0.5fr 0.9fr;
   gap: 12px;
   align-items: center;
+  min-width: 0;
+}
+
+.reporte-generado__cabecera > span,
+.reporte-generado__fila > span,
+.reporte-generado__fila > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .reporte-generado__cabecera {
@@ -6117,6 +6130,25 @@ input:disabled {
     border-color: #cfcfcf;
     box-shadow: none;
     break-inside: avoid;
+  }
+
+  .reporte-generado__encabezado,
+  .reporte-generado__kpis,
+  .reporte-generado__paneles,
+  .reporte-generado__panel,
+  .estadistica-administracion__tarjeta,
+  .reporte-barras__fila,
+  .reporte-generado__cabecera,
+  .reporte-generado__fila,
+  .reporte-generado__resumen-interno,
+  .reporte-generado__resumen-interno > div {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .reporte-generado__panel,
+  .estadistica-administracion__tarjeta {
+    box-shadow: none;
   }
 
   .explorador-afinidades {

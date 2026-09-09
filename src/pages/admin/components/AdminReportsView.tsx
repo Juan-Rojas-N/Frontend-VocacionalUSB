@@ -21,6 +21,14 @@ interface GeneratedReport {
   generatedAt: string
 }
 
+const REPORT_GENDER_OPTIONS = [
+  { value: 'Masculino', label: 'Masculino' },
+  { value: 'Femenino', label: 'Femenino' },
+  { value: 'Prefiero no decirlo', label: 'Prefiero no decirlo' },
+  { value: 'Otro', label: 'Otro' },
+  { value: '__sin_especificar', label: 'Sin especificar' },
+]
+
 function normalizeSearch(value: string) {
   return value
     .normalize('NFD')
@@ -43,6 +51,7 @@ export function AdminReportsView() {
   const [departmentQuery, setDepartmentQuery] = useState('')
   const [selectedDepartmentId, setSelectedDepartmentId] = useState('')
   const [programId, setProgramId] = useState('')
+  const [genero, setGenero] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -187,6 +196,7 @@ export function AdminReportsView() {
       userId: selectedUserId || undefined,
       departmentId: selectedDepartmentId || undefined,
       programId: programId || undefined,
+      genero: genero || undefined,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     }
@@ -276,6 +286,14 @@ export function AdminReportsView() {
       : undefined
     if (selectedProgram) {
       chips.push(`Programa: ${selectedProgram.name}`)
+    }
+    if (report.filters.genero) {
+      const genderOption = REPORT_GENDER_OPTIONS.find(
+        (option) => option.value === report.filters.genero,
+      )
+      if (genderOption) {
+        chips.push(`Género: ${genderOption.label}`)
+      }
     }
     if (report.filters.startDate) {
       chips.push(`Desde: ${report.filters.startDate}`)
@@ -425,6 +443,27 @@ export function AdminReportsView() {
               {errors.department}
             </small>
           ) : null}
+        </fieldset>
+
+        <fieldset className="admin-filter-card">
+          <legend>Género</legend>
+          <label htmlFor="report-genero">Género</label>
+          <select
+            id="report-genero"
+            value={genero}
+            onChange={(event) => {
+              setGenero(event.target.value)
+              clearReport()
+            }}
+          >
+            <option value="">Todos los géneros</option>
+            {REPORT_GENDER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="admin-filter-hint">Filtra por el género declarado por el estudiante.</p>
         </fieldset>
 
         <fieldset className="admin-filter-card">

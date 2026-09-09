@@ -422,6 +422,7 @@ export const adminService = {
               topCareer: top?.nombrePrograma ?? 'Sin programa',
               affinity: top?.valorAfinidad ?? 0,
               satisfaction: prueba.satisfaccion ?? null,
+              genero: user.genero ?? null,
             })
           }
 

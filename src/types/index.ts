@@ -354,6 +354,7 @@ export interface AdminReportFilters {
   userId?: string
   departmentId?: string
   programId?: string
+  genero?: string
   startDate?: string
   endDate?: string
 }
@@ -435,6 +436,7 @@ export interface AdminReportRow {
   topCareer: string
   affinity: number
   satisfaction: number | null
+  genero: string | null
 }
 
 export interface AdminReportDataset {
